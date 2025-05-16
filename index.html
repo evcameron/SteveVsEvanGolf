@@ -73,6 +73,25 @@
       background-color: #f9fafb;
     }
 
+    /* Wrapper to enable horizontal scroll on mobile */
+    #matchTable-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+      box-shadow: inset 10px 0 8px -8px rgba(39, 103, 73, 0.3),
+                  inset -10px 0 8px -8px rgba(39, 103, 73, 0.3);
+      border-radius: 14px;
+      margin-bottom: 40px;
+    }
+
+    /* Remove shadow and enable full width on larger screens */
+    @media (min-width: 700px) {
+      #matchTable-wrapper {
+        box-shadow: none;
+        overflow-x: visible;
+      }
+    }
+
     table {
       border-collapse: separate;
       border-spacing: 0;
@@ -127,9 +146,15 @@
       user-select: none;
     }
 
+    /* Smaller font and padding for better mobile fit */
     @media (max-width: 700px) {
       table, .summary-table {
         font-size: 0.85rem;
+      }
+
+      #matchTable th,
+      #matchTable td {
+        padding: 8px 10px;
       }
     }
   </style>
@@ -163,21 +188,23 @@
     </tbody>
   </table>
 
-  <!-- Match History Table -->
-  <table id="matchTable" role="grid" aria-label="Golf match results between Evan and Steve">
-    <thead>
-      <tr>
-        <th scope="col">Date</th>
-        <th scope="col">Course</th>
-        <th scope="col">Evan Strokes</th>
-        <th scope="col">Steve Strokes</th>
-        <th scope="col">Evan Holes Won</th>
-        <th scope="col">Steve Holes Won</th>
-        <th scope="col">Result</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- Match History Table wrapped in scroll container -->
+  <div id="matchTable-wrapper">
+    <table id="matchTable" role="grid" aria-label="Golf match results between Evan and Steve">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Course</th>
+          <th scope="col">Evan Strokes</th>
+          <th scope="col">Steve Strokes</th>
+          <th scope="col">Evan Holes Won</th>
+          <th scope="col">Steve Holes Won</th>
+          <th scope="col">Result</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <footer>⛳️ Updated live from Google Sheets</footer>
 
