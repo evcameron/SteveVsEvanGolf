@@ -87,7 +87,7 @@
 
     /* Match History Table */
 	table#matchTable {
-	  min-width: 700px; /* already set, this is good */
+	  min-width: 365px; /* already set, this is good */
 	  width: 100%;
 	  border-collapse: separate;
 	  border-spacing: 0;
@@ -200,7 +200,7 @@
     }
 
     /* Mobile adjustments */
-    @media (max-width: 700px) {
+    @media (max-width: 365px) {
       .summary-table th,
       .summary-table td {
         padding: 8px 10px;
@@ -222,7 +222,7 @@
     }
 
     /* Desktop - center everything */
-    @media (min-width: 700px) {
+    @media (min-width: 365px) {
       #matchTable-wrapper {
         box-shadow: none;
         overflow-x: visible;
@@ -287,7 +287,9 @@
     </table>
   </div>
 
-  <footer>⛳️ Updated live from Google Sheets</footer>
+<footer>
+  ⛳️ Update Results <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit" target="_blank" rel="noopener noreferrer">here</a>
+</footer>
 
   <script>
     const sheetId = "1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q";
