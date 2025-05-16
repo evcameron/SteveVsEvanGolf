@@ -77,33 +77,58 @@
     }
 
     /* Match Table wrapper for horizontal scroll */
-    #matchTable-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      box-shadow:
-        inset 10px 0 8px -8px rgba(39, 103, 73, 0.3),
-        inset -10px 0 8px -8px rgba(39, 103, 73, 0.3);
-      border-radius: 14px;
-      margin-bottom: 40px;
-
-      display: flex;
-      justify-content: center;
-    }
+	#matchTable-wrapper {
+	  width: 100%;
+	  overflow-x: auto;
+	  -webkit-overflow-scrolling: touch;
+	  display: block; /* was flex before, which can cut off content */
+	  margin-bottom: 40px;
+	}
 
     /* Match History Table */
-    table#matchTable {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: 100%;
-      max-width: 900px;
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgb(39 103 73 / 0.1);
-      overflow: hidden;
-      font-size: 0.95rem;
-      min-width: 700px; /* keep a minimum width so scroll works */
-    }
+	table#matchTable {
+	  min-width: 700px; /* already set, this is good */
+	  width: 100%;
+	  border-collapse: separate;
+	  border-spacing: 0;
+	}
+
+		/* Sticky First Column */
+		#matchTable th:first-child,
+		#matchTable td:first-child {
+		  position: sticky;
+		  left: 0;
+		  width: 100px;
+		  min-width: 100px;
+		  background: white;
+		  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+		  z-index: 2;
+		}
+
+		#matchTable th:first-child {
+		  background: #276749;
+		  color: white;
+		  z-index: 3;
+		}
+
+		/* Sticky Second Column */
+		#matchTable th:nth-child(2),
+		#matchTable td:nth-child(2) {
+		  position: sticky;
+		  left: 100px;
+		  width: 140px;
+		  min-width: 140px;
+		  background: white;
+		  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
+		  z-index: 1;
+		}
+
+		#matchTable th:nth-child(2) {
+		  background: #276749;
+		  color: white;
+		  z-index: 3;
+		}
+
 
     thead {
       background: #276749;
@@ -185,6 +210,8 @@
         margin-right: auto;
       }
     }
+
+
   </style>
 </head>
 <body>
@@ -227,7 +254,7 @@
           <th scope="col">Steve Strokes</th>
           <th scope="col">Evan Holes Won</th>
           <th scope="col">Steve Holes Won</th>
-          <th scope="col">Result</th>
+          <th scope="col">Winner</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -274,17 +301,31 @@
           const sHoles = parseInt(steveHoles, 10);
           if (!date || !course || isNaN(eStrokes) || isNaN(sStrokes) || isNaN(eHoles) || isNaN(sHoles)) return;
 
-          const result = eStrokes < sStrokes ? "Evan" : "Steve";
-          if (result === "Evan") evanWins++;
-          else steveWins++;
+			let result;
+			if (eHoles > sHoles) {
+			  result = "Evan";
+			  evanWins++;
+			  if (course.trim().toLowerCase() !== "dentonia park") evanWinsExcl++;
+			} else if (eHoles < sHoles) {
+			  result = "Steve";
+			  steveWins++;
+			  if (course.trim().toLowerCase() !== "dentonia park") steveWinsExcl++;
+			} else {
+			  result = "Tie";
+			}
 
-          if (course.trim().toLowerCase() !== "dentonia park") {
-            if (result === "Evan") evanWinsExcl++;
-            else steveWinsExcl++;
-          }
 
           const row = document.createElement("tr");
-          row.className = result === "Evan" ? "win" : "loss";
+			row.className = result === "Evan" ? "win" : result === "Steve" ? "loss" : "tie";
+			row.innerHTML = `
+			  <td>${date}</td>
+			  <td>${course}</td>
+			  <td>${evanStrokes}</td>
+			  <td>${steveStrokes}</td>
+			  <td>${evanHoles}</td>
+			  <td>${steveHoles}</td>
+			  <td>${result !== "Tie" ? `${result} Wins` : "Tie"}</td>
+			`;
           row.innerHTML = `
             <td>${date}</td>
             <td>${course}</td>
@@ -292,7 +333,7 @@
             <td>${steveStrokes}</td>
             <td>${evanHoles}</td>
             <td>${steveHoles}</td>
-            <td>${result} Wins</td>
+            <td>${result}</td>
           `;
           tableBody.appendChild(row);
         });
