@@ -44,7 +44,7 @@
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
       overflow: hidden;
       width: 100%;
-      max-width: 900px;
+      max-width: 600px;
     }
 
     .summary-table th,
@@ -179,8 +179,6 @@
       cursor: default;
     }
 
-    th:first-child::before { content: "📅 "; }
-    th:nth-child(2)::before { content: "⛳ "; }
 	
 	#matchTable th,
 #matchTable td {
@@ -222,7 +220,7 @@
 				  #matchTable-wrapper {
 					box-shadow: none;
 					overflow-x: visible;
-					max-width: 900px;
+					max-width: 600px;
 					margin-left: auto;
 					margin-right: auto;
 				  }
@@ -272,11 +270,11 @@
         <tr>
           <th scope="col">Date</th>
           <th scope="col">Course</th>
-          <th scope="col">Evan Strokes</th>
-          <th scope="col">Steve Strokes</th>
+			<th scope="col">Winner</th>
           <th scope="col">Evan Holes Won</th>
           <th scope="col">Steve Holes Won</th>
-          <th scope="col">Winner</th>
+          <th scope="col">Evan Strokes</th>
+          <th scope="col">Steve Strokes</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -284,7 +282,7 @@
   </div>
 
 <footer>
-  ⛳️ Update Results <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit" target="_blank" rel="noopener noreferrer">here</a>. Version 0.2.
+  ⛳️ Update Results <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit" target="_blank" rel="noopener noreferrer">here</a>.
 </footer>
 
   <script>
@@ -344,20 +342,22 @@
 			row.innerHTML = `
 			  <td>${date}</td>
 			  <td>${course}</td>
-			  <td>${evanStrokes}</td>
-			  <td>${steveStrokes}</td>
+			  <td>${result !== "Tie" ? `${result} Wins` : "Tie"}</td>
 			  <td>${evanHoles}</td>
 			  <td>${steveHoles}</td>
-			  <td>${result !== "Tie" ? `${result} Wins` : "Tie"}</td>
+			  <td>${evanStrokes}</td>
+			  <td>${steveStrokes}</td>
+
 			`;
           row.innerHTML = `
             <td>${date}</td>
             <td>${course}</td>
-            <td>${evanStrokes}</td>
-            <td>${steveStrokes}</td>
+            <td>${result}</td>
             <td>${evanHoles}</td>
             <td>${steveHoles}</td>
-            <td>${result}</td>
+            <td>${evanStrokes}</td>
+            <td>${steveStrokes}</td>
+
           `;
           tableBody.appendChild(row);
         });
