@@ -98,11 +98,12 @@
 		#matchTable td:first-child {
 		  position: sticky;
 		  left: 0;
-		  width: 100px;
-		  min-width: 100px;
+		  width: 65px;
+		  min-width: 65px;
 		  background: white;
 		  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
 		  z-index: 2;
+		  white-space: nowrap
 		}
 
 		#matchTable th:first-child {
@@ -116,8 +117,8 @@
 		#matchTable td:nth-child(2) {
 		  position: sticky;
 		  left: 100px;
-		  width: 140px;
-		  min-width: 140px;
+		  width: 100px;
+		  min-width: 100px;
 		  background: white;
 		  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
 		  z-index: 1;
@@ -140,7 +141,6 @@
       padding: 12px 14px;
       font-weight: 500;
       user-select: none;
-      white-space: nowrap;
     }
 
     tbody tr:nth-child(even) {
@@ -164,6 +164,11 @@
 
     th:first-child::before { content: "📅 "; }
     th:nth-child(2)::before { content: "⛳ "; }
+	
+	#matchTable th,
+#matchTable td {
+  font-size: 0.75rem; /* adjust as needed */
+}
 
     footer {
       margin-top: 50px;
@@ -178,7 +183,7 @@
       .summary-table th,
       .summary-table td {
         padding: 8px 10px;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
       }
 
       #matchTable-wrapper {
@@ -189,8 +194,8 @@
         margin-bottom: 30px;
       }
 
-      table#matchTable {
-        font-size: 0.85rem;
+      table#matchTable td {
+        font-size: 0.75rem;
         min-width: 600px;
       }
     }
