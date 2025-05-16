@@ -33,8 +33,9 @@
       text-align: center;
     }
 
+    /* Summary Table */
     .summary-table {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       border-collapse: collapse;
       text-align: center;
       font-weight: 500;
@@ -42,6 +43,8 @@
       border-radius: 12px;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
       overflow: hidden;
+      width: 100%;
+      max-width: 900px;
     }
 
     .summary-table th,
@@ -55,42 +58,41 @@
       color: white;
     }
 
-    .summary-table tbody td:first-child {
-      font-weight: 600;
-      background-color: #f0fdf4;
-      text-align: left;
-      padding-left: 24px;
-    }
+	.summary-table .less-emphasized td:first-child {
+	  background-color: #f1f5f9;
+	  padding-left: 40px; /* increased indentation */
+	  font-style: italic;
+	  color: #6b7280;
+	}
 
     .summary-table .less-emphasized {
-      background-color: #f9fafb;
+      background-color: #f1f5f9;
       color: #4a5568;
       font-style: italic;
       font-weight: 400;
     }
 
     .summary-table .less-emphasized td:first-child {
-      background-color: #f9fafb;
+      background-color: #f1f5f9;
     }
 
+    /* Match Table wrapper for horizontal scroll */
     #matchTable-wrapper {
       width: 100%;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      box-shadow: inset 10px 0 8px -8px rgba(39, 103, 73, 0.3),
-                  inset -10px 0 8px -8px rgba(39, 103, 73, 0.3);
+      box-shadow:
+        inset 10px 0 8px -8px rgba(39, 103, 73, 0.3),
+        inset -10px 0 8px -8px rgba(39, 103, 73, 0.3);
       border-radius: 14px;
       margin-bottom: 40px;
+
+      display: flex;
+      justify-content: center;
     }
 
-    @media (min-width: 700px) {
-      #matchTable-wrapper {
-        box-shadow: none;
-        overflow-x: visible;
-      }
-    }
-
-    table {
+    /* Match History Table */
+    table#matchTable {
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
@@ -100,6 +102,7 @@
       box-shadow: 0 4px 12px rgb(39 103 73 / 0.1);
       overflow: hidden;
       font-size: 0.95rem;
+      min-width: 700px; /* keep a minimum width so scroll works */
     }
 
     thead {
@@ -112,6 +115,7 @@
       padding: 12px 14px;
       font-weight: 500;
       user-select: none;
+      white-space: nowrap;
     }
 
     tbody tr:nth-child(even) {
@@ -144,28 +148,41 @@
       user-select: none;
     }
 
+    /* Mobile adjustments */
     @media (max-width: 700px) {
-      table, .summary-table {
+      .summary-table th,
+      .summary-table td {
+        padding: 8px 10px;
         font-size: 0.85rem;
       }
 
-      #matchTable th,
-      #matchTable td {
-        padding: 8px 10px;
-      }
-      
-      /* Compact summary table */
-      .summary-table th,
-      .summary-table td {
-        padding: 6px 10px;
+      #matchTable-wrapper {
+        box-shadow:
+          inset 6px 0 6px -6px rgba(39, 103, 73, 0.3),
+          inset -6px 0 6px -6px rgba(39, 103, 73, 0.3);
+        border-radius: 10px;
+        margin-bottom: 30px;
       }
 
-      .summary-table tbody td:first-child {
-        padding-left: 14px;
+      table#matchTable {
+        font-size: 0.85rem;
+        min-width: 600px;
+      }
+    }
+
+    /* Desktop - center everything */
+    @media (min-width: 700px) {
+      #matchTable-wrapper {
+        box-shadow: none;
+        overflow-x: visible;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
       }
 
       .summary-table {
-        margin-bottom: 20px;
+        margin-left: auto;
+        margin-right: auto;
       }
     }
   </style>
@@ -176,12 +193,13 @@
     <p class="subtitle">A head-to-head history of golf glory</p>
   </div>
 
-  <table class="summary-table">
+  <!-- Summary Table -->
+  <table class="summary-table" role="table" aria-label="Summary of Evan vs Steve wins">
     <thead>
       <tr>
-        <th></th>
-        <th>Evan Wins</th>
-        <th>⛳ Steve Wins</th>
+        <th scope="col"></th>
+        <th scope="col">Evan Wins</th>
+        <th scope="col">Steve Wins</th>
       </tr>
     </thead>
     <tbody>
@@ -198,7 +216,8 @@
     </tbody>
   </table>
 
-  <div id="matchTable-wrapper">
+  <!-- Match History Table -->
+  <div id="matchTable-wrapper" role="region" aria-label="Scrollable match history table">
     <table id="matchTable" role="grid" aria-label="Golf match results between Evan and Steve">
       <thead>
         <tr>
@@ -222,6 +241,7 @@
     const apiKey = "AIzaSyBBP7IiSGqtVyUTMpdhTj5Rg9MSb4bINio";
     const range = "Sheet1!A2:G";
 
+    // Parse date in MM-DD-YYYY format to a Date object
     function parseDate(dateStr) {
       const [month, day, year] = dateStr.split("-");
       return new Date(`${year}-${month}-${day}`);
@@ -234,6 +254,7 @@
         const data = await res.json();
         const rows = data.values || [];
 
+        // Sort rows by date descending (most recent first)
         rows.sort((a, b) => {
           const dateA = parseDate(a[0]);
           const dateB = parseDate(b[0]);
