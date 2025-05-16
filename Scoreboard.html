@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Golf Match History: Evan vs Steve</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f4faf4;
+      color: #2d3a34;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 3rem;
+      margin: 0;
+      color: #276749;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 1.2rem;
+      color: #4a5568;
+      font-style: italic;
+      text-align: center;
+    }
+
+    .summary-table {
+      margin-bottom: 30px;
+      border-collapse: collapse;
+      text-align: center;
+      font-weight: 500;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 12px 20px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .summary-table thead th {
+      background-color: #276749;
+      color: white;
+    }
+
+    .summary-table tbody td:first-child {
+      font-weight: 600;
+      background-color: #f0fdf4;
+      text-align: left;
+      padding-left: 24px;
+    }
+
+    .summary-table .less-emphasized {
+      background-color: #f9fafb;
+      color: #4a5568;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .summary-table .less-emphasized td:first-child {
+      background-color: #f9fafb;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      max-width: 900px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgb(39 103 73 / 0.1);
+      overflow: hidden;
+      font-size: 0.95rem;
+    }
+
+    thead {
+      background: #276749;
+      color: white;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 12px 14px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fdf9;
+    }
+
+    tbody tr.win {
+      color: #276749;
+      font-weight: 600;
+    }
+
+    tbody tr.loss {
+      color: #9b2c2c;
+      font-weight: 600;
+    }
+
+    tbody tr:hover {
+      background: #e6f0e8;
+      cursor: default;
+    }
+
+    th:first-child::before { content: "📅 "; }
+    th:nth-child(2)::before { content: "⛳ "; }
+
+    footer {
+      margin-top: 50px;
+      font-size: 0.9rem;
+      color: #718096;
+      text-align: center;
+      user-select: none;
+    }
+
+    @media (max-width: 700px) {
+      table, .summary-table {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1>⛳ Evan vs Steve</h1>
+    <p class="subtitle">A head-to-head history of golf glory</p>
+  </div>
+
+  <!-- Summary Table -->
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Evan Wins</th>
+        <th>⛳ Steve Wins</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>All Matches</td>
+        <td id="winCount">0</td>
+        <td id="lossCount">0</td>
+      </tr>
+      <tr class="less-emphasized">
+        <td>Excl. Dentonia Park</td>
+        <td id="winCountNoDentonia">0</td>
+        <td id="lossCountNoDentonia">0</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Match History Table -->
+  <table id="matchTable" role="grid" aria-label="Golf match results between Evan and Steve">
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Course</th>
+        <th scope="col">Evan Strokes</th>
+        <th scope="col">Steve Strokes</th>
+        <th scope="col">Evan Holes Won</th>
+        <th scope="col">Steve Holes Won</th>
+        <th scope="col">Result</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <footer>⛳️ Updated live from Google Sheets</footer>
+
+  <script>
+    const sheetId = "1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q";
+    const apiKey = "AIzaSyBBP7IiSGqtVyUTMpdhTj5Rg9MSb4bINio";
+    const range = "Sheet1!A2:G";
+
+    // Parse date in MM-DD-YYYY format to a Date object
+    function parseDate(dateStr) {
+      const [month, day, year] = dateStr.split("-");
+      return new Date(`${year}-${month}-${day}`);
+    }
+
+    async function loadSheetData() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const rows = data.values || [];
+
+        // Sort rows by date descending (most recent first)
+        rows.sort((a, b) => {
+          const dateA = parseDate(a[0]);
+          const dateB = parseDate(b[0]);
+          return dateB - dateA;
+        });
+
+        let evanWins = 0, steveWins = 0;
+        let evanWinsExcl = 0, steveWinsExcl = 0;
+
+        const tableBody = document.querySelector("#matchTable tbody");
+        tableBody.innerHTML = "";
+
+        rows.forEach(([date, course, evanStrokes, steveStrokes, evanHoles, steveHoles]) => {
+          const eStrokes = parseInt(evanStrokes, 10);
+          const sStrokes = parseInt(steveStrokes, 10);
+          const eHoles = parseInt(evanHoles, 10);
+          const sHoles = parseInt(steveHoles, 10);
+          if (!date || !course || isNaN(eStrokes) || isNaN(sStrokes) || isNaN(eHoles) || isNaN(sHoles)) return;
+
+          const result = eStrokes < sStrokes ? "Evan" : "Steve";
+          if (result === "Evan") evanWins++;
+          else steveWins++;
+
+          if (course.trim().toLowerCase() !== "dentonia park") {
+            if (result === "Evan") evanWinsExcl++;
+            else steveWinsExcl++;
+          }
+
+          const row = document.createElement("tr");
+          row.className = result === "Evan" ? "win" : "loss";
+          row.innerHTML = `
+            <td>${date}</td>
+            <td>${course}</td>
+            <td>${evanStrokes}</td>
+            <td>${steveStrokes}</td>
+            <td>${evanHoles}</td>
+            <td>${steveHoles}</td>
+            <td>${result} Wins</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        document.getElementById("winCount").textContent = evanWins;
+        document.getElementById("lossCount").textContent = steveWins;
+        document.getElementById("winCountNoDentonia").textContent = evanWinsExcl;
+        document.getElementById("lossCountNoDentonia").textContent = steveWinsExcl;
+      } catch (err) {
+        console.error("Error loading sheet:", err);
+      }
+    }
+
+    loadSheetData();
+    setInterval(loadSheetData, 60000);
+  </script>
+</body>
+</html>
