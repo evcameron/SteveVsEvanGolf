@@ -257,6 +257,11 @@
         <td id="winCount">0</td>
         <td id="lossCount">0</td>
       </tr>
+	<tr class="less-emphasized">
+	  <td>Dentonia Only</td>
+	  <td id="winCountDentonia">0</td>
+	  <td id="lossCountDentonia">0</td>
+	</tr>
       <tr class="less-emphasized">
         <td>Excl. Dentonia</td>
         <td id="winCountNoDentonia">0</td>
@@ -313,8 +318,9 @@
           return dateB - dateA;
         });
 
-        let evanWins = 0, steveWins = 0;
-        let evanWinsExcl = 0, steveWinsExcl = 0;
+		let evanWins = 0, steveWins = 0;
+		let evanWinsExcl = 0, steveWinsExcl = 0;
+		let evanWinsDentonia = 0, steveWinsDentonia = 0;
 
         const tableBody = document.querySelector("#matchTable tbody");
         tableBody.innerHTML = "";
@@ -330,13 +336,19 @@
 			if (eHoles > sHoles) {
 			  result = "Evan";
 			  evanWins++;
-			  if (course.trim().toLowerCase() !== "dentonia park") evanWinsExcl++;
+			  if (course.trim().toLowerCase() !== "dentonia park") {
+				evanWinsExcl++;
+			  } else {
+				evanWinsDentonia++;
+			  }
 			} else if (eHoles < sHoles) {
 			  result = "Steve";
 			  steveWins++;
-			  if (course.trim().toLowerCase() !== "dentonia park") steveWinsExcl++;
-			} else {
-			  result = "Tie";
+			  if (course.trim().toLowerCase() !== "dentonia park") {
+				steveWinsExcl++;
+			  } else {
+				steveWinsDentonia++;
+			  }
 			}
 
 
@@ -365,10 +377,12 @@
           tableBody.appendChild(row);
         });
 
-        document.getElementById("winCount").textContent = evanWins;
-        document.getElementById("lossCount").textContent = steveWins;
-        document.getElementById("winCountNoDentonia").textContent = evanWinsExcl;
-        document.getElementById("lossCountNoDentonia").textContent = steveWinsExcl;
+		document.getElementById("winCount").textContent = evanWins;
+		document.getElementById("lossCount").textContent = steveWins;
+		document.getElementById("winCountNoDentonia").textContent = evanWinsExcl;
+		document.getElementById("lossCountNoDentonia").textContent = steveWinsExcl;
+		document.getElementById("winCountDentonia").textContent = evanWinsDentonia;
+		document.getElementById("lossCountDentonia").textContent = steveWinsDentonia;
       } catch (err) {
         console.error("Error loading sheet:", err);
       }
