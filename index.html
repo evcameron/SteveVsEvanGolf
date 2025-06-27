@@ -249,6 +249,7 @@
         <th scope="col"></th>
         <th scope="col">Evan Wins</th>
         <th scope="col">Steve Wins</th>
+        <th scope="col">Ties</th>
       </tr>
     </thead>
     <tbody>
@@ -256,16 +257,19 @@
         <td>All Matches</td>
         <td id="winCount">0</td>
         <td id="lossCount">0</td>
+        <td id="tieCount">0</td>
       </tr>
 	<tr class="less-emphasized">
 	  <td>Dentonia Only</td>
 	  <td id="winCountDentonia">0</td>
 	  <td id="lossCountDentonia">0</td>
+	  <td id="tieCountDentonia">0</td>
 	</tr>
       <tr class="less-emphasized">
         <td>Excl. Dentonia</td>
         <td id="winCountNoDentonia">0</td>
         <td id="lossCountNoDentonia">0</td>
+        <td id="tieCountNoDentonia">0</td>
       </tr>
     </tbody>
   </table>
@@ -318,9 +322,9 @@
           return dateB - dateA;
         });
 
-		let evanWins = 0, steveWins = 0;
-		let evanWinsExcl = 0, steveWinsExcl = 0;
-		let evanWinsDentonia = 0, steveWinsDentonia = 0;
+		let evanWins = 0, steveWins = 0, tieWins = 0;
+		let evanWinsExcl = 0, steveWinsExcl = 0, tieWinsExcl = 0;
+		let evanWinsDentonia = 0, steveWinsDentonia = 0, tieWinsDentonia = 0;
 
         const tableBody = document.querySelector("#matchTable tbody");
         tableBody.innerHTML = "";
@@ -348,6 +352,14 @@
 				steveWinsExcl++;
 			  } else {
 				steveWinsDentonia++;
+			  }
+			} else {
+			  result = "Tie";
+			  tieWins++;
+			  if (course.trim().toLowerCase() !== "dentonia park") {
+				tieWinsExcl++;
+			  } else {
+				tieWinsDentonia++;
 			  }
 			}
 
@@ -383,6 +395,9 @@
 		document.getElementById("lossCountNoDentonia").textContent = steveWinsExcl;
 		document.getElementById("winCountDentonia").textContent = evanWinsDentonia;
 		document.getElementById("lossCountDentonia").textContent = steveWinsDentonia;
+		document.getElementById("tieCount").textContent = tieWins;
+		document.getElementById("tieCountNoDentonia").textContent = tieWinsExcl;
+		document.getElementById("tieCountDentonia").textContent = tieWinsDentonia;
       } catch (err) {
         console.error("Error loading sheet:", err);
       }
