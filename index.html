@@ -1,410 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Golf Match History: Evan vs Steve</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f4faf4;
-      color: #2d3a34;
-      padding: 40px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    h1 {
-      font-weight: 600;
-      font-size: 3rem;
-      margin: 0;
-      color: #276749;
-    }
-
-    .subtitle {
-      margin-top: 8px;
-      font-size: 1.2rem;
-      color: #4a5568;
-      font-style: italic;
-      text-align: center;
-    }
-
-    /* Summary Table */
-    .summary-table {
-      margin-bottom: 20px;
-      border-collapse: collapse;
-      text-align: center;
-      font-weight: 500;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .summary-table th,
-    .summary-table td {
-      padding: 12px 20px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .summary-table thead th {
-      background-color: #276749;
-      color: white;
-    }
-
-
-    .summary-table .less-emphasized {
-      background-color: #f1f5f9;
-      color: #4a5568;
-      font-style: italic;
-      font-weight: 400;
-    }
-
-    .summary-table .less-emphasized td:first-child {
-      background-color: #f1f5f9;
-    }
-
-    /* Match Table wrapper for horizontal scroll */
-	#matchTable-wrapper {
-	  width: 100%;
-	  overflow-x: auto;
-	  -webkit-overflow-scrolling: touch;
-	  display: block; /* was flex before, which can cut off content */
-	  margin-bottom: 40px;
-	}
-
-    /* Match History Table */
-	table#matchTable {
-	  width: 100%;
-	  border-collapse: separate;
-	  border-spacing: 0;
-	  
-	}
-
-		/* Sticky First Column */
-		#matchTable th:first-child,
-		#matchTable td:first-child {
-		  position: sticky;
-		  left: 0;
-		  width: 65px;
-		  min-width: 65px;
-		  background: white;
-		  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-		  z-index: 2;
-		  white-space: nowrap
-		}
-
-		#matchTable th:first-child {
-		  background: #276749;
-		  color: white;
-		  z-index: 3;
-		}
-
-		/* Sticky Second Column */
-		#matchTable th:nth-child(2),
-		#matchTable td:nth-child(2) {
-		  position: sticky;
-		  left: 100px;
-		  width: 100px;
-		  min-width: 100px;
-		  background: white;
-		  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
-		  z-index: 1;
-		}
-		
-		#matchTable td:nth-child(3),
-		#matchTable th:nth-child(3) {
-		  width: 40px;
-		}
-		#matchTable td:nth-child(4),
-		#matchTable th:nth-child(4) {
-		  width: 40px;
-		}
-		#matchTable td:nth-child(5),
-		#matchTable th:nth-child(5) {
-		  width: 40px;
-		}
-		#matchTable td:nth-child(6),
-		#matchTable th:nth-child(6) {
-		  width: 40px;
-		}
-
-
-		#matchTable th:nth-child(2) {
-		  background: #276749;
-		  color: white;
-		  z-index: 3;
-		}
-
-
-    thead {
-      background: #276749;
-      color: white;
-    }
-
-    th, td {
-      text-align: center;
-      padding: 12px 14px;
-      font-weight: 500;
-      user-select: none;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f9fdf9;
-    }
-
-    tbody tr.win {
-      color: #276749;
-      font-weight: 600;
-    }
-
-    tbody tr.loss {
-      color: #9b2c2c;
-      font-weight: 600;
-    }
-
-    tbody tr:hover {
-      background: #e6f0e8;
-      cursor: default;
-    }
-
-	
-	#matchTable th,
-#matchTable td {
-  font-size: 0.75rem; /* adjust as needed */
-}
-
-    footer {
-      margin-top: 50px;
-      font-size: 0.9rem;
-      color: #718096;
-      text-align: center;
-      user-select: none;
-    }
-
-    /* Mobile adjustments */
-				@media (max-width: 700px) {
-				  .summary-table th,
-				  .summary-table td {
-					padding: 8px 10px;
-					font-size: 0.75rem;
-				  }
-
-
-				  #matchTable-wrapper {
-					box-shadow:
-					  inset 6px 0 6px -6px rgba(39, 103, 73, 0.3),
-					  inset -6px 0 6px -6px rgba(39, 103, 73, 0.3);
-					border-radius: 10px;
-					margin-bottom: 30px;
-				  }
-
-				  table#matchTable td {
-					font-size: 0.75rem;
-				  }
-				}
-
-    /* Desktop - center everything */
-				@media (min-width: 700px) {
-				  #matchTable-wrapper {
-					box-shadow: none;
-					overflow-x: visible;
-					max-width: 600px;
-					margin-left: auto;
-					margin-right: auto;
-				  }
-
-				  .summary-table {
-					margin-left: auto;
-					margin-right: auto;
-				  }
-				}
-
-.table-heading {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #2d3a34;
-  margin: 40px 0 16px;
-  text-align: center;
-}
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evan vs Steve - Golf Series</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .score-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .evan-win { border-left: 6px solid #3b82f6; } /* Blue */
+        .steve-win { border-left: 6px solid #10b981; } /* Green */
+        .draw { border-left: 6px solid #94a3b8; }     /* Gray */
+    </style>
 </head>
-<body>
-  <div style="text-align: center; margin-bottom: 32px;">
-    <h1>Evan vs Steve</h1>
-    <p class="subtitle">A head-to-head history of golf glory</p>
-  </div>
+<body class="bg-slate-50 font-sans antialiased text-slate-900">
 
-  <!-- Summary Table -->
-  <table class="summary-table" role="table" aria-label="Summary of Evan vs Steve wins">
-    <thead>
-      <tr>
-        <th scope="col"></th>
-        <th scope="col">Evan Wins</th>
-        <th scope="col">Steve Wins</th>
-        <th scope="col">Ties</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>All Matches</td>
-        <td id="winCount">0</td>
-        <td id="lossCount">0</td>
-        <td id="tieCount">0</td>
-      </tr>
-	<tr class="less-emphasized">
-	  <td>Dentonia Only</td>
-	  <td id="winCountDentonia">0</td>
-	  <td id="lossCountDentonia">0</td>
-	  <td id="tieCountDentonia">0</td>
-	</tr>
-      <tr class="less-emphasized">
-        <td>Excl. Dentonia</td>
-        <td id="winCountNoDentonia">0</td>
-        <td id="lossCountNoDentonia">0</td>
-        <td id="tieCountNoDentonia">0</td>
-      </tr>
-    </tbody>
-  </table>
+    <header class="bg-green-800 text-white p-6 text-center shadow-lg">
+        <h1 class="text-2xl font-black uppercase tracking-tighter italic">Evan vs Steve</h1>
+        <p class="text-xs opacity-75 mt-1 font-semibold uppercase tracking-widest">Historical Golf Series</p>
+    </header>
 
-  <!-- Match History Table -->
-  <h2 class="table-heading">Match Details</h2>
-  <div id="matchTable-wrapper" role="region" aria-label="Scrollable match history table">
-    <table id="matchTable" role="grid" aria-label="Golf match results between Evan and Steve">
-      <thead>
-        <tr>
-          <th scope="col">Date</th>
-          <th scope="col">Course</th>
-			<th scope="col">Winner</th>
-          <th scope="col">Evan Holes Won</th>
-          <th scope="col">Steve Holes Won</th>
-          <th scope="col">Evan Strokes</th>
-          <th scope="col">Steve Strokes</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+    <main class="max-w-md mx-auto p-4">
+        <div id="results-list" class="space-y-4">
+            <div class="flex justify-center items-center py-20">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+            </div>
+        </div>
+    </main>
 
-<footer>
-  ⛳️ Update Results <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit" target="_blank" rel="noopener noreferrer">here</a>.
-</footer>
+    <script>
+        // Your specific CSV Published Link
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv';
 
-  <script>
-    const sheetId = "1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q";
-    const apiKey = "AIzaSyBBP7IiSGqtVyUTMpdhTj5Rg9MSb4bINio";
-    const range = "Sheet1!A2:G";
+        async function fetchResults() {
+            try {
+                const response = await fetch(CSV_URL);
+                const data = await response.text();
+                
+                // Split CSV into rows, then split rows into columns
+                const rows = data.split('\n').map(row => row.split(','));
+                
+                // Remove the header row (Date, Course, Evan, Steve, etc.)
+                const entries = rows.slice(1); 
+                
+                const container = document.getElementById('results-list');
+                container.innerHTML = '';
 
-    // Parse date in MM-DD-YYYY format to a Date object
-    function parseDate(dateStr) {
-      const [month, day, year] = dateStr.split("-");
-      return new Date(`${year}-${month}-${day}`);
-    }
+                entries.forEach((col) => {
+                    // Mapping columns: 0=Date, 1=Course, 2=Evan, 3=Steve
+                    // Note: .trim() removes any hidden whitespace or newlines
+                    const date = col[0]?.trim() || 'N/A';
+                    const course = col[1]?.trim() || 'Unknown Course';
+                    const evanScore = parseInt(col[2]?.trim());
+                    const steveScore = parseInt(col[3]?.trim());
 
-    async function loadSheetData() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const rows = data.values || [];
+                    if (isNaN(evanScore) || isNaN(steveScore)) return; // Skip empty/invalid rows
 
-        // Sort rows by date descending (most recent first)
-        rows.sort((a, b) => {
-          const dateA = parseDate(a[0]);
-          const dateB = parseDate(b[0]);
-          return dateB - dateA;
-        });
+                    // Logic for card styling based on winner (Lowest score wins)
+                    let winClass = 'draw';
+                    if (evanScore < steveScore) winClass = 'evan-win';
+                    else if (steveScore < evanScore) winClass = 'steve-win';
 
-		let evanWins = 0, steveWins = 0, tieWins = 0;
-		let evanWinsExcl = 0, steveWinsExcl = 0, tieWinsExcl = 0;
-		let evanWinsDentonia = 0, steveWinsDentonia = 0, tieWinsDentonia = 0;
+                    const card = `
+                        <div class="score-card p-5 flex flex-col ${winClass}">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${date}</span>
+                                <span class="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded">${course}</span>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div class="flex flex-col">
+                                    <span class="text-slate-500 text-xs font-semibold uppercase">Evan</span>
+                                    <span class="font-black text-3xl ${evanScore <= steveScore ? 'text-slate-900' : 'text-slate-400'}">${evanScore}</span>
+                                </div>
+                                <div class="text-center pb-1">
+                                    <span class="text-slate-300 font-bold italic text-sm">VS</span>
+                                </div>
+                                <div class="flex flex-col items-end text-right">
+                                    <span class="text-slate-500 text-xs font-semibold uppercase">Steve</span>
+                                    <span class="font-black text-3xl ${steveScore <= evanScore ? 'text-slate-900' : 'text-slate-400'}">${steveScore}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('results-list').innerHTML = `<p class='text-red-500 text-center mt-10'>Unable to sync data.</p>`;
+            }
+        }
 
-        const tableBody = document.querySelector("#matchTable tbody");
-        tableBody.innerHTML = "";
-
-        rows.forEach(([date, course, evanStrokes, steveStrokes, evanHoles, steveHoles]) => {
-          const eStrokes = parseInt(evanStrokes, 10);
-          const sStrokes = parseInt(steveStrokes, 10);
-          const eHoles = parseInt(evanHoles, 10);
-          const sHoles = parseInt(steveHoles, 10);
-          if (!date || !course || isNaN(eStrokes) || isNaN(sStrokes) || isNaN(eHoles) || isNaN(sHoles)) return;
-
-			let result;
-			if (eHoles > sHoles) {
-			  result = "Evan";
-			  evanWins++;
-			  if (course.trim().toLowerCase() !== "dentonia park") {
-				evanWinsExcl++;
-			  } else {
-				evanWinsDentonia++;
-			  }
-			} else if (eHoles < sHoles) {
-			  result = "Steve";
-			  steveWins++;
-			  if (course.trim().toLowerCase() !== "dentonia park") {
-				steveWinsExcl++;
-			  } else {
-				steveWinsDentonia++;
-			  }
-			} else {
-			  result = "Tie";
-			  tieWins++;
-			  if (course.trim().toLowerCase() !== "dentonia park") {
-				tieWinsExcl++;
-			  } else {
-				tieWinsDentonia++;
-			  }
-			}
-
-
-          const row = document.createElement("tr");
-			row.className = result === "Evan" ? "win" : result === "Steve" ? "loss" : "tie";
-			row.innerHTML = `
-			  <td>${date}</td>
-			  <td>${course}</td>
-			  <td>${result !== "Tie" ? `${result} Wins` : "Tie"}</td>
-			  <td>${evanHoles}</td>
-			  <td>${steveHoles}</td>
-			  <td>${evanStrokes}</td>
-			  <td>${steveStrokes}</td>
-
-			`;
-          row.innerHTML = `
-            <td>${date}</td>
-            <td>${course}</td>
-            <td>${result}</td>
-            <td>${evanHoles}</td>
-            <td>${steveHoles}</td>
-            <td>${evanStrokes}</td>
-            <td>${steveStrokes}</td>
-
-          `;
-          tableBody.appendChild(row);
-        });
-
-		document.getElementById("winCount").textContent = evanWins;
-		document.getElementById("lossCount").textContent = steveWins;
-		document.getElementById("winCountNoDentonia").textContent = evanWinsExcl;
-		document.getElementById("lossCountNoDentonia").textContent = steveWinsExcl;
-		document.getElementById("winCountDentonia").textContent = evanWinsDentonia;
-		document.getElementById("lossCountDentonia").textContent = steveWinsDentonia;
-		document.getElementById("tieCount").textContent = tieWins;
-		document.getElementById("tieCountNoDentonia").textContent = tieWinsExcl;
-		document.getElementById("tieCountDentonia").textContent = tieWinsDentonia;
-      } catch (err) {
-        console.error("Error loading sheet:", err);
-      }
-    }
-
-    loadSheetData();
-    setInterval(loadSheetData, 60000);
-  </script>
+        fetchResults();
+    </script>
 </body>
 </html>
