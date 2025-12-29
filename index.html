@@ -31,64 +31,61 @@
         // Your specific CSV Published Link
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv';
 
-        async function fetchResults() {
-            try {
-                const response = await fetch(CSV_URL);
-                const data = await response.text();
-                
-                // Split CSV into rows, then split rows into columns
-                const rows = data.split('\n').map(row => row.split(','));
-                
-                // Remove the header row (Date, Course, Evan, Steve, etc.)
-                const entries = rows.slice(1); 
-                
-                const container = document.getElementById('results-list');
-                container.innerHTML = '';
+async function fetchResults() {
+    try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.text();
+        console.log("Data received:", data); // Check your console (F12) to see if data arrives
 
-                entries.forEach((col) => {
-                    // Mapping columns: 0=Date, 1=Course, 2=Evan, 3=Steve
-                    // Note: .trim() removes any hidden whitespace or newlines
-                    const date = col[0]?.trim() || 'N/A';
-                    const course = col[1]?.trim() || 'Unknown Course';
-                    const evanScore = parseInt(col[2]?.trim());
-                    const steveScore = parseInt(col[3]?.trim());
+        const rows = data.split('\n').filter(row => row.trim() !== '').map(row => row.split(','));
+        const entries = rows.slice(1); 
+        
+        const container = document.getElementById('results-list');
+        container.innerHTML = '';
 
-                    if (isNaN(evanScore) || isNaN(steveScore)) return; // Skip empty/invalid rows
-
-                    // Logic for card styling based on winner (Lowest score wins)
-                    let winClass = 'draw';
-                    if (evanScore < steveScore) winClass = 'evan-win';
-                    else if (steveScore < evanScore) winClass = 'steve-win';
-
-                    const card = `
-                        <div class="score-card p-5 flex flex-col ${winClass}">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${date}</span>
-                                <span class="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded">${course}</span>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <div class="flex flex-col">
-                                    <span class="text-slate-500 text-xs font-semibold uppercase">Evan</span>
-                                    <span class="font-black text-3xl ${evanScore <= steveScore ? 'text-slate-900' : 'text-slate-400'}">${evanScore}</span>
-                                </div>
-                                <div class="text-center pb-1">
-                                    <span class="text-slate-300 font-bold italic text-sm">VS</span>
-                                </div>
-                                <div class="flex flex-col items-end text-right">
-                                    <span class="text-slate-500 text-xs font-semibold uppercase">Steve</span>
-                                    <span class="font-black text-3xl ${steveScore <= evanScore ? 'text-slate-900' : 'text-slate-400'}">${steveScore}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += card;
-                });
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('results-list').innerHTML = `<p class='text-red-500 text-center mt-10'>Unable to sync data.</p>`;
-            }
+        if (entries.length === 0) {
+            container.innerHTML = "<p class='text-center'>Sheet is empty or not formatted correctly.</p>";
+            return;
         }
 
+        entries.forEach((col) => {
+            const date = col[0]?.replace(/"/g, '') || 'N/A';
+            const course = col[1]?.replace(/"/g, '') || 'Course';
+            const evanScore = parseInt(col[2]);
+            const steveScore = parseInt(col[3]);
+
+            if (isNaN(evanScore) || isNaN(steveScore)) return;
+
+            let winClass = 'draw';
+            if (evanScore < steveScore) winClass = 'evan-win';
+            else if (steveScore < evanScore) winClass = 'steve-win';
+
+            const card = `
+                <div class="score-card p-5 flex flex-col ${winClass} mb-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">${date}</span>
+                        <span class="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 rounded">${course}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="flex flex-col">
+                            <span class="text-slate-500 text-xs font-semibold">EVAN</span>
+                            <span class="font-black text-3xl">${evanScore}</span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-slate-500 text-xs font-semibold">STEVE</span>
+                            <span class="font-black text-3xl">${steveScore}</span>
+                        </div>
+                    </div>
+                </div>`;
+            container.innerHTML += card;
+        });
+    } catch (error) {
+        console.error("Detailed Error:", error);
+        document.getElementById('results-list').innerHTML = `<p class='text-red-500 text-center mt-10'>Unable to sync data. <br><span class="text-xs text-gray-400">${error.message}</span></p>`;
+    }
+}
         fetchResults();
     </script>
 </body>
