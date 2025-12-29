@@ -80,7 +80,7 @@
                             <div class="flex justify-between items-center bg-slate-50 rounded-lg p-3">
                                 <div class="text-center">
                                     <p class="text-slate-500 text-[10px] font-bold uppercase">Evan</p>
-                                    <p class="text-3xl font-black ${evanS <= steveS ? 'text-blue-600' : 'text-slate-300'}">${evanS}</p>
+                                    <p class="text-3xl font-black ${winner === 'evan' ? 'text-blue-600' : 'text-slate-300'}">${evanS}</p>
                                     <p class="text-[9px] text-slate-400 font-bold">${evanH} Holes</p>
                                 </div>
                                 
@@ -91,8 +91,8 @@
                                 
                                 <div class="text-right text-center">
                                     <p class="text-slate-500 text-[10px] font-bold uppercase">Steve</p>
-                                    <p class="text-3xl font-black ${steveS <= evanS ? 'text-emerald-600' : 'text-slate-300'}">${steveS}</p>
-                                    <p class="text-[9px] text-slate-400 font-bold">${steveH} Holes</p>
+                                    <p class="text-3xl font-black ${winner === 'steve' ? 'text-emerald-600' : 'text-slate-300'}">${steveS}</p>
+                                    <p class="text-[9px] ${winner === 'steve' ? 'text-emerald-700' : 'text-slate-400'} font-bold">${steveH} Holes</p>
                                 </div>
                             </div>
                         </div>
