@@ -51,7 +51,8 @@
 
                     const date = col[1]?.replace(/"/g, '').trim();
                     const category = col[2]?.replace(/"/g, '').trim();
-                    const isMajor = col[3]?.replace(/"/g, '').trim().toLowerCase() === 'yes';
+					const Major = col[3]?.replace(/"/g, '').trim().toLowerCase();
+                    const isMajor = col[3]?.trim().length > 0;
                     const course = col[4]?.replace(/"/g, '').trim();
                     const evanS = parseInt(col[5]);
                     const steveS = parseInt(col[6]);
