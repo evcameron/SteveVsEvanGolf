@@ -16,15 +16,10 @@
         .border-9hole    { border-left-color: #8b5cf6; }
         .border-other    { border-left-color: #cbd5e1; }
 
-        .major-card { 
-            border: 2px solid #fbbf24 !important; 
-            border-left-width: 5px !important; 
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); 
-        }
+        .major-card { border: 2px solid #fbbf24 !important; border-left-width: 5px !important; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
         
-        /* Restored Dark/Green Color Scheme */
-        .header-bg { background-color: #052e16; } /* green-950 */
+        .header-bg { background-color: #052e16; } 
         .header-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); color: white; }
         
         #breakdown-container { transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out; overflow: hidden; }
@@ -33,19 +28,23 @@
         .chevron { transition: transform 0.3s ease; }
         .rotate-180 { transform: rotate(180deg); }
         
-        .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
         .points-divider { border-bottom: 2px solid rgba(255, 255, 255, 0.15); margin: 12px 0; }
-
         .category-row { cursor: pointer; transition: all 0.2s; border-radius: 4px; margin: 0 -4px; padding: 2px 4px; position: relative; z-index: 10; }
         .category-row:hover { background: rgba(255,255,255,0.08); }
-        
-        .category-row.active-filter { 
-            background: rgba(59, 130, 246, 0.25); 
-            border: 1px solid rgba(59, 130, 246, 0.4);
-        }
+        .category-row.active-filter { background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.4); }
 
-        .clickable-card { cursor: pointer; transition: background 0.2s; }
-        .clickable-card:hover { background: rgba(255, 255, 255, 0.08); }
+        /* Year Selector Styles */
+        .year-dropdown { position: relative; display: inline-block; }
+        .year-menu { 
+            position: absolute; right: 0; top: 110%; background: #1e293b; 
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); z-index: 50;
+            min-width: 80px; display: none;
+        }
+        .year-menu.show { display: block; }
+        .year-item { padding: 8px 12px; cursor: pointer; color: white; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .year-item:hover { background: rgba(255,255,255,0.1); }
+        .year-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -59,8 +58,14 @@
                         Whistle Post <span class="text-green-400 not-italic font-light">CUP</span>
                     </span>
                 </h1>
-                <div class="border border-white/30 bg-black/20 px-2 py-0.5 rounded text-[11px] font-black italic tracking-tighter text-white">
-                    <span id="display-year">2026</span>
+                
+                <div class="year-dropdown">
+                    <button onclick="toggleYearMenu(event)" class="border border-white/30 bg-black/20 px-2 py-0.5 rounded text-[11px] font-black italic tracking-tighter text-white flex items-center gap-1">
+                        <span id="display-year">2026</span>
+                        <svg class="w-2 h-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="year-menu" class="year-menu">
+                        </div>
                 </div>
             </div>
             
@@ -85,7 +90,7 @@
                     </div>
                 </div>
 
-                <div id="main-breakdown-card" onclick="toggleBreakdown()" class="header-card clickable-card rounded-xl px-3 py-2 text-left">
+                <div id="main-breakdown-card" onclick="toggleBreakdown()" class="header-card rounded-xl px-3 py-2 text-left cursor-pointer hover:bg-white/10 transition-colors">
                     <div class="w-full flex justify-between items-center">
                         <p class="text-[9px] uppercase tracking-[0.2em] font-black opacity-40 text-white">Points Breakdown</p>
                         <div class="bg-white/10 p-1 rounded-md">
@@ -113,28 +118,36 @@
 
     <main class="max-w-md mx-auto p-3">
         <div id="filter-status" class="hidden mb-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
-            <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                Filtered: <span id="active-filter-name">None</span>
-            </span>
-            <button onclick="resetFilter()" class="text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">
-                Clear
-            </button>
+            <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Filtered: <span id="active-filter-name">None</span></span>
+            <button onclick="resetFilter()" class="text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">Clear</button>
         </div>
-
         <div id="results-list" class="space-y-3 pt-2">
             <p class="text-center py-10 text-slate-400 italic">Accessing Season Records...</p>
         </div>
     </main>
 
     <script>
-        const CONFIG = { WebsiteYear: "2026" };
+        let CONFIG = { WebsiteYear: "2026" };
         const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
         const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
 
         let allMatches = []; 
         let activeFilter = null;
+        let availableYears = new Set();
 
-        document.getElementById('display-year').innerText = CONFIG.WebsiteYear;
+        function toggleYearMenu(e) {
+            e.stopPropagation();
+            document.getElementById('year-menu').classList.toggle('show');
+        }
+
+        window.onclick = () => document.getElementById('year-menu').classList.remove('show');
+
+        function changeYear(year) {
+            CONFIG.WebsiteYear = year;
+            document.getElementById('display-year').innerText = year;
+            resetFilter();
+            refreshData();
+        }
 
         function toggleBreakdown() {
             const container = document.getElementById('breakdown-container');
@@ -159,6 +172,8 @@
 
                 rows.forEach(col => {
                     const rowYear = col[5]?.replace(/"/g, '').trim(); 
+                    if (rowYear && rowYear !== "Year") availableYears.add(rowYear);
+
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
 
@@ -171,30 +186,32 @@
                     if (label.toLowerCase() === 'total') {
                         document.getElementById('evan-points').innerText = evPts;
                         document.getElementById('steve-points').innerText = stPts;
-                    } 
-                    else {
+                    } else {
                         tournamentCount++;
                         const isMajor = type.includes('major');
-                        const evWinDisp = isMajor ? '' : `${evWins}w`;
-                        const stWinDisp = isMajor ? '' : `${stWins}w`;
-
                         list.innerHTML += `
-                            <div onclick="applyFilter('${label}', this, event)" 
-                                 class="category-row flex items-center border-b border-white/5 pb-1">
-                                <div class="flex-grow truncate pr-1">
-                                    <span class="opacity-70 truncate">${label}</span>
-                                </div>
+                            <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1">
+                                <div class="flex-grow truncate pr-1"><span class="opacity-70 truncate">${label}</span></div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
                                     <span class="w-12 text-blue-300 font-black">${evPts}</span>
                                     <span class="w-12 text-emerald-300 font-black border-r border-white/10">${stPts}</span>
-                                    <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${evWinDisp}</span>
-                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWinDisp}</span>
+                                    <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${isMajor ? '' : evWins+'w'}</span>
+                                    <span class="w-12 text-emerald-300/60 text-[8px]">${isMajor ? '' : stWins+'w'}</span>
                                 </div>
                             </div>`;
                         if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
                     }
                 });
+                populateYearMenu();
             } catch (e) { console.error(e); }
+        }
+
+        function populateYearMenu() {
+            const menu = document.getElementById('year-menu');
+            menu.innerHTML = '';
+            Array.from(availableYears).sort().reverse().forEach(year => {
+                menu.innerHTML += `<div class="year-item" onclick="changeYear('${year}')">${year}</div>`;
+            });
         }
 
         async function fetchMatchResults() {
@@ -202,49 +219,35 @@
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-                allMatches = rows.slice(1).reverse().filter(col => {
-                    if (col.length < 10) return false;
-                    return col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear;
-                });
+                allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
-            } catch (e) { document.getElementById('results-list').innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
+            } catch (e) { console.error(e); }
         }
 
         function renderMatches() {
             const container = document.getElementById('results-list');
             container.innerHTML = '';
             const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[3]?.trim() === activeFilter) : allMatches;
+            if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found for this year.</p>`; return; }
 
             filtered.forEach(col => {
-                const dateStr = col[1]?.trim();
-                const cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
-                const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
-                const winnerText = col[9]?.trim().toLowerCase();
+                const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
+                const evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
-
-                let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : (cat.includes('9') ? 'border-9hole' : 'border-other'));
-                let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
-                let majorClass = maj ? 'major-card' : '';
-
+                let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : 'border-9hole');
                 container.innerHTML += `
                     <div class="flex flex-col">
-                        ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif">🏆 ${maj}</span></div>` : ''}
-                        <div class="score-card px-3 py-2 flex flex-col ${catClass} ${bgClass} ${majorClass}">
+                        ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase italic">🏆 ${maj}</span></div>` : ''}
+                        <div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
-                                <span class="text-[9px] font-bold uppercase tracking-tight">${dateStr} • ${course}</span>
+                                <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 w-[42%]">
-                                    <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span>
-                                    <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evH} <span class="text-[9px] font-bold opacity-70">(${evS})</span></span>
-                                </div>
-                                <span class="text-slate-300 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
-                                <div class="flex items-center justify-end gap-2 w-[42%] text-right">
-                                    <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-70">(${stS})</span> ${stH}</span>
-                                    <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span>
-                                </div>
+                                <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evH}</span></div>
+                                <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
+                                <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}">${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span></div>
                             </div>
                         </div>
                     </div>`;
@@ -252,43 +255,41 @@
         }
 
         function updateStats() {
-            let evTotalWins = 0, stTotalWins = 0;
+            let eW = 0, sW = 0;
             allMatches.forEach(col => {
-                const winnerText = col[9]?.trim().toLowerCase();
-                if (winnerText.includes('evan')) evTotalWins++; 
-                if (winnerText.includes('steve')) stTotalWins++;
+                const w = col[9]?.toLowerCase();
+                if (w.includes('evan')) eW++; else if (w.includes('steve')) sW++;
             });
-            document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
-            document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
+            document.getElementById('evan-wins-stat').innerText = `${eW} Wins`;
+            document.getElementById('steve-wins-stat').innerText = `${sW} Wins`;
         }
 
-        function applyFilter(categoryName, element, event) {
-            if (event) event.stopPropagation();
-            document.querySelectorAll('.category-row').forEach(row => row.classList.remove('active-filter'));
-            element.classList.add('active-filter');
-            activeFilter = categoryName;
-            document.getElementById('active-filter-name').innerText = categoryName;
+        function applyFilter(cat, el, e) {
+            e.stopPropagation();
+            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
+            el.classList.add('active-filter');
+            activeFilter = cat;
+            document.getElementById('active-filter-name').innerText = cat;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
-            
-            const container = document.getElementById('breakdown-container');
-            const icon = document.getElementById('chevron-icon');
-            container.classList.remove('collapsed');
-            container.classList.add('expanded');
-            icon.classList.remove('rotate-180');
-
+            document.getElementById('breakdown-container').classList.replace('collapsed', 'expanded');
+            document.getElementById('chevron-icon').classList.remove('rotate-180');
             document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function resetFilter() {
             activeFilter = null;
-            document.querySelectorAll('.category-row').forEach(row => row.classList.remove('active-filter'));
+            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
             document.getElementById('filter-status').classList.add('hidden');
             renderMatches();
         }
 
-        fetchOverallDetails();
-        fetchMatchResults();
+        function refreshData() {
+            fetchOverallDetails();
+            fetchMatchResults();
+        }
+
+        refreshData();
     </script>
 </body>
 </html>
