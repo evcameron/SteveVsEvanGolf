@@ -9,12 +9,14 @@
         /* Base Card Styling */
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left-width: 5px; }
         
-        /* WINNER GRADIENTS: Fading from white on the left to the winner's color on the right */
-        .bg-evan-win  { background: linear-gradient(to right, #ffffff, #eff6ff); } /* To light blue */
-        .bg-steve-win { background: linear-gradient(to right, #ffffff, #ecfdf5); } /* To light emerald */
+        /* WINNER GRADIENTS */
+        /* Evan: Glow on the LEFT (Blue to White) */
+        .bg-evan-win  { background: linear-gradient(to right, #eff6ff, #ffffff); } 
+        /* Steve: Glow on the RIGHT (White to Emerald) */
+        .bg-steve-win { background: linear-gradient(to right, #ffffff, #ecfdf5); } 
         .bg-draw      { background: #ffffff; }
 
-        /* CATEGORY BORDER COLORS (Left side) */
+        /* CATEGORY BORDER COLORS */
         .border-dentonia { border-left-color: #f59e0b; }
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
@@ -138,13 +140,11 @@
                     const isEvW = win.includes('evan');
                     const isStW = win.includes('steve');
 
-                    // 1. Determine Category Border Color
                     let catClass = 'border-other';
                     if (cat.toLowerCase().includes('dentonia')) catClass = 'border-dentonia';
                     else if (cat.toLowerCase().includes('18')) catClass = 'border-18hole';
                     else if (cat.toLowerCase().includes('9')) catClass = 'border-9hole';
 
-                    // 2. Determine Winner Gradient Class
                     let bgClass = 'bg-draw';
                     if (isEvW) bgClass = 'bg-evan-win';
                     else if (isStW) bgClass = 'bg-steve-win';
