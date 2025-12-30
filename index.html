@@ -11,12 +11,18 @@
         .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
         .bg-draw      { background: #ffffff; }
 
+        /* Left Border Colors by Category */
         .border-dentonia { border-left-color: #94a3b8; }
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
         .border-other    { border-left-color: #cbd5e1; }
 
-        .major-card { border-top: 2px solid #fbbf24; border-right: 2px solid #fbbf24; border-bottom: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
+        /* Major Styling */
+        .major-card { 
+            border: 2px solid #fbbf24 !important; 
+            border-left-width: 5px !important; /* Ensures left remains the accent side */
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); 
+        }
         .major-header { background: #fbbf24; color: #78350f; }
         
         .header-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); }
@@ -66,9 +72,7 @@
                                 <span id="evan-18-wins" class="text-[8px] font-bold uppercase text-white/30">-- Wins (ex DP)</span>
                             </div>
                         </div>
-
                         <div class="h-14 w-[1px] bg-white/10"></div>
-
                         <div class="text-center w-28">
                             <span class="block text-[10px] font-black uppercase opacity-40 mb-1">Steve</span>
                             <span id="steve-points" class="text-3xl font-black text-emerald-400 drop-shadow-md">--</span>
@@ -207,13 +211,17 @@
                         if (isStW) st18Wins++;
                     }
 
+                    // Border Logic
                     let catClass = lowerCat.includes('dentonia') ? 'border-dentonia' : (lowerCat.includes('18') ? 'border-18hole' : (lowerCat.includes('9') ? 'border-9hole' : 'border-other'));
                     let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
+                    
+                    // If it's a Major, it uses 'major-card' which forces all borders gold
+                    let majorClass = maj ? 'major-card' : '';
 
                     container.innerHTML += `
                         <div class="flex flex-col">
                             ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif">🏆 ${maj}</span></div>` : ''}
-                            <div class="score-card px-3 py-2 flex flex-col ${catClass} ${bgClass} ${maj ? 'major-card' : ''}">
+                            <div class="score-card px-3 py-2 flex flex-col ${catClass} ${bgClass} ${majorClass}">
                                 <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                     <span class="text-[9px] font-bold uppercase tracking-tight">${date} • ${course}</span>
                                     <span class="text-[9px] font-bold uppercase">${cat}</span>
