@@ -27,7 +27,8 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
-        .section-divider { border-bottom: 1px solid rgba(255, 255, 255, 0.2); margin: 8px 0; }
+        /* Style for the custom divider */
+        .points-divider { border-bottom: 2px solid rgba(255, 255, 255, 0.15); margin: 12px 0; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -106,11 +107,10 @@
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
 
-                let lastType = null;
+                let tournamentCount = 0;
 
                 rows.forEach(col => {
-                    const typeRaw = col[0]?.replace(/"/g, '').trim();
-                    const type = typeRaw.toLowerCase();
+                    const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     const weight = col[4]?.replace(/"/g, '').trim(); 
                     const evPts = col[6]?.replace(/"/g, '').trim(); 
@@ -125,12 +125,7 @@
                         document.getElementById('steve-points').innerText = stPts;
                     } 
                     else {
-                        // ADDED: Logic to insert horizontal line when Type changes
-                        if (lastType !== null && lastType !== type) {
-                            list.innerHTML += `<div class="section-divider"></div>`;
-                        }
-                        lastType = type;
-
+                        tournamentCount++;
                         const isMajor = type.includes('major');
                         const evWinDisp = isMajor ? '' : `${evWins}w`;
                         const stWinDisp = isMajor ? '' : `${stWins}w`;
@@ -148,6 +143,11 @@
                                     <span class="w-12 text-emerald-300/60 text-[8px]">${stWinDisp}</span>
                                 </div>
                             </div>`;
+
+                        // Insert the divider after the 3rd valid tournament row
+                        if (tournamentCount === 3) {
+                            list.innerHTML += `<div class="points-divider"></div>`;
+                        }
                     }
                 });
             } catch (e) { console.error(e); }
