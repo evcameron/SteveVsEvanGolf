@@ -28,7 +28,6 @@
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
         
-        /* Consistent Wins Label Styling */
         .win-text { font-size: 7px; font-weight: 800; opacity: 0.6; margin-left: 2px; }
         .evan-win-color { color: #93c5fd; }
         .steve-win-color { color: #6ee7b7; }
@@ -43,13 +42,13 @@
             <div class="header-card rounded-lg p-3">
                 <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 mb-2">Overall Cup Totals</p>
                 <div class="flex justify-around items-center">
-                    <div class="text-center">
+                    <div class="text-center w-24">
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
                         <span id="evan-points" class="text-2xl font-black text-blue-300">--</span>
                         <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 mt-1 tracking-wider">-- Wins</span>
                     </div>
                     <div class="h-12 w-[1px] bg-white/20"></div>
-                    <div class="text-center">
+                    <div class="text-center w-24">
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Steve</span>
                         <span id="steve-points" class="text-2xl font-black text-emerald-300">--</span>
                         <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 mt-1 tracking-wider">-- Wins</span>
@@ -57,17 +56,20 @@
                 </div>
             </div>
 
-            <div class="header-card rounded-lg p-3 text-left">
-                <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none">
-                    <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">Points Breakdown</p>
+            <div class="header-card rounded-lg p-3">
+                <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none mb-1">
+                    <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 text-left">Points Breakdown</p>
                     <svg id="chevron-icon" class="chevron w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                     </svg>
                 </button>
                 <div id="breakdown-container" class="expanded">
-                    <div class="pt-4 mb-2 flex justify-between text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
-                        <span>CATEGORY / WEIGHT</span>
-                        <span class="w-36 text-center">EVAN pts/wins — STEVE pts/wins</span>
+                    <div class="pt-2 mb-2 flex items-center text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
+                        <span class="flex-grow text-left">CATEGORY / WEIGHT</span>
+                        <div class="flex w-52 justify-between">
+                            <span class="w-24 text-left">EVAN</span>
+                            <span class="w-24 text-right">STEVE</span>
+                        </div>
                     </div>
                     <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
                 </div>
@@ -121,20 +123,19 @@
                     } 
                     else {
                         list.innerHTML += `
-                            <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                                <div class="flex items-center gap-2 truncate pr-1">
-                                    <span class="opacity-70 truncate">${label}</span>
+                            <div class="flex items-center border-b border-white/5 pb-1">
+                                <div class="flex-grow flex items-center gap-1 truncate pr-1">
+                                    <span class="opacity-70 truncate text-[9px]">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
-                                <div class="w-40 flex justify-end items-center gap-2 flex-shrink-0">
-                                    <div class="flex items-center">
+                                <div class="flex w-52 justify-between items-center">
+                                    <div class="w-24 text-left flex items-center">
                                         <span class="text-blue-300 font-black">${evPts}</span>
                                         <span class="win-text evan-win-color">${evWins}w</span>
                                     </div>
-                                    <span class="text-white/10 mx-1">|</span>
-                                    <div class="flex items-center">
-                                        <span class="text-emerald-300 font-black">${stPts}</span>
+                                    <div class="w-24 text-right flex items-center justify-end">
                                         <span class="win-text steve-win-color">${stWins}w</span>
+                                        <span class="text-emerald-300 font-black ml-1">${stPts}</span>
                                     </div>
                                 </div>
                             </div>`;
