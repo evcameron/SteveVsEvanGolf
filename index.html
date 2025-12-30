@@ -111,13 +111,14 @@
     <script>
         // --- CONFIGURATION ---
         const CONFIG = {
-            WebsiteYear: "2026" //UPDATE THE YEAR HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            WebsiteYear: "2026" // Global Filter Variable
         };
         // ---------------------
 
         const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
         const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
 
+        // Update Header Year
         document.getElementById('display-year').innerText = `${CONFIG.WebsiteYear} SEASON`;
 
         function toggleBreakdown() {
@@ -142,7 +143,8 @@
                 let tournamentCount = 0;
 
                 rows.forEach(col => {
-                    const rowYear = col[5]?.replace(/"/g, '').trim(); // 6th column (index 5)
+                    // Check Year in 6th column (index 5)
+                    const rowYear = col[5]?.replace(/"/g, '').trim(); 
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     
                     if (!label || label === "Category" || label === "") return;
@@ -175,7 +177,7 @@
                                     <span class="w-12 text-blue-300 font-black">${evPts}</span>
                                     <span class="w-12 text-emerald-300 font-black border-r border-white/10">${stPts}</span>
                                     <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${evWinDisp}</span>
-                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWinDisp}</span>
+                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWins}w</span>
                                 </div>
                             </div>`;
                         if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
@@ -188,16 +190,18 @@
             try {
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
+                // Regex to handle potential commas inside quotes in CSV
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
                 const container = document.getElementById('results-list');
                 container.innerHTML = '';
                 let evTotalWins = 0, stTotalWins = 0;
                 let ev18Wins = 0, st18Wins = 0;
 
+                // Process rows (skipping header)
                 rows.slice(1).reverse().forEach(col => {
                     if (col.length < 10) return;
                     
-                    // NEW: Filter matches by checking the "Year" column (Column 1, index 0)
+                    // Filter matches by checking the "Year" column (Column 1, index 0)
                     const rowYear = col[0]?.replace(/"/g, '').trim();
                     if (rowYear !== CONFIG.WebsiteYear) return;
 
@@ -247,6 +251,11 @@
                         </div>`;
                 });
                 
+                // If no results found, show empty state
+                if (container.innerHTML === '') {
+                    container.innerHTML = `<p class="text-center py-20 text-slate-400 italic">No records found for the ${CONFIG.WebsiteYear} season.</p>`;
+                }
+
                 document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
                 document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
                 document.getElementById('evan-18-wins').innerText = `${ev18Wins} Wins (ex DP)`;
