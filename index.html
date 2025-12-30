@@ -218,7 +218,6 @@
             const container = document.getElementById('results-list');
             container.innerHTML = '';
             
-            // UPDATED FILTER LOGIC: Matches if EITHER Category (col[2]) OR Major (col[3]) equals the filter
             const filtered = activeFilter ? allMatches.filter(col => {
                 const rowCat = col[2]?.trim();
                 const rowMajor = col[3]?.trim();
@@ -284,7 +283,7 @@
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
             document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setTimeout(toggleBreakdown, 400);
+            // Collapse logic removed per request
         }
 
         function resetFilter() {
