@@ -6,19 +6,31 @@
     <title>Whistle Post Cup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Card & Badge Styles */
-        .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
+        /* Base Card Styles */
+        .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
         .evan-win { border-left: 4px solid #3b82f6; }
         .steve-win { border-left: 4px solid #10b981; }
         .major-card { border: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
         
-        /* Header Glassmorphism Styles */
+        /* Header Glassmorphism */
         .header-card { 
             background: rgba(255, 255, 255, 0.1); 
             border: 1px solid rgba(255, 255, 255, 0.2); 
             backdrop-filter: blur(4px);
         }
+
+        /* Animation for Collapsible Section */
+        #breakdown-container {
+            transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out;
+            overflow: hidden;
+        }
+        .collapsed { max-height: 0 !important; opacity: 0; }
+        .expanded { max-height: 500px; opacity: 1; }
+        
+        /* Rotation for the toggle arrow */
+        .chevron { transition: transform 0.3s ease; }
+        .rotate-180 { transform: rotate(180deg); }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -43,134 +55,24 @@
                 </div>
             </div>
 
-            <div class="header-card rounded-lg p-3">
-                <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 mb-2 text-left">Points Breakdown</p>
-                <div id="breakdown-list" class="space-y-1.5 text-[10px] font-bold uppercase">
-                    </div>
+            <div class="header-card rounded-lg p-3 text-left">
+                <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none">
+                    <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">Points Breakdown</p>
+                    <svg id="chevron-icon" class="chevron w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                </button>
+
+                <div id="breakdown-container" class="expanded mt-3">
+                    <div id="breakdown-list" class="space-y-1.5 text-[10px] font-bold uppercase">
+                        </div>
+                </div>
             </div>
         </div>
 
-        <div id="standings" class="flex justify-center gap-4 text-[11px] font-black uppercase tracking-widest text-white/90">
-            </div>
+        <div id="standings" class="flex justify-center gap-4 text-[11px] font-black uppercase tracking-widest text-white/90"></div>
     </header>
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
-            <p class="text-center py-10 text-slate-400 font-medium italic">Syncing scores...</p>
-        </div>
-    </main>
-
-    <script>
-        const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
-        const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
-
-        /**
-         * FETCH 1: Handles the Details Tab (Overall Points & Breakdown)
-         */
-        async function fetchOverallDetails() {
-            try {
-                const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
-                const data = await response.text();
-                const rows = data.split(/\r?\n/).map(row => row.split(','));
-
-                const breakdownList = document.getElementById('breakdown-list');
-                breakdownList.innerHTML = '';
-
-                rows.forEach(col => {
-                    const label = col[3]?.replace(/"/g, '').trim();
-                    const evanVal = col[6]?.replace(/"/g, '').trim();
-                    const steveVal = col[7]?.replace(/"/g, '').trim();
-
-                    // Skip empty rows or header rows
-                    if (!label || label === "Category" || label === "") return;
-
-                    if (label.toLowerCase() === 'total') {
-                        document.getElementById('evan-points').innerText = evanVal;
-                        document.getElementById('steve-points').innerText = steveVal;
-                    } 
-                    else {
-                        // Display individual category rows
-                        breakdownList.innerHTML += `
-                            <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                                <span class="opacity-60">${label}</span>
-                                <div class="flex gap-3">
-                                    <span class="text-blue-300 font-black w-6 text-right">${evanVal}</span>
-                                    <span class="text-white/20">|</span>
-                                    <span class="text-emerald-300 font-black w-6 text-left">${steveVal}</span>
-                                </div>
-                            </div>`;
-                    }
-                });
-            } catch (e) { console.error("Details Fetch Error:", e); }
-        }
-
-        /**
-         * FETCH 2: Handles the Match Results Tab
-         */
-        async function fetchMatchResults() {
-            try {
-                const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
-                const data = await response.text();
-                const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-                const container = document.getElementById('results-list');
-                const standingsEl = document.getElementById('standings');
-                container.innerHTML = '';
-                let evWins = 0, stWins = 0;
-
-                // Process rows (Skip header, reverse for chronological order)
-                rows.slice(1).reverse().forEach(col => {
-                    if (col.length < 7) return;
-                    const date = col[1]?.replace(/"/g, '').trim();
-                    const category = col[2]?.replace(/"/g, '').trim();
-                    const majorName = col[3]?.replace(/"/g, '').trim();
-                    const isMajor = majorName.length > 0;
-                    const course = col[4]?.replace(/"/g, '').trim();
-                    const evanS = parseInt(col[5]), steveS = parseInt(col[6]);
-                    const evanH = col[7]?.trim() || "0", steveH = col[8]?.trim() || "0";
-                    const winner = col[9]?.replace(/"/g, '').trim().toLowerCase();
-
-                    if (isNaN(evanS) || isNaN(steveS)) return;
-                    
-                    if (winner.includes('evan')) evWins++; 
-                    else if (winner.includes('steve')) stWins++;
-                    
-                    const isEvW = winner.includes('evan');
-                    const isStW = winner.includes('steve');
-
-                    container.innerHTML += `
-                        <div class="flex flex-col">
-                            ${isMajor ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic">🏆 ${majorName}</span></div>` : ''}
-                            <div class="score-card px-3 py-2 flex flex-col ${isEvW ? 'evan-win' : (isStW ? 'steve-win' : '')} ${isMajor ? 'major-card' : ''}">
-                                <div class="flex justify-between items-center mb-1 border-b border-slate-50 pb-1">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">${date} • ${course}</span>
-                                    <span class="text-[9px] font-bold text-slate-300 uppercase">${category}</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2 w-[40%]">
-                                        <span class="font-bold text-[10px] ${isEvW ? 'text-blue-700' : 'text-slate-400'}">EVAN</span>
-                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evanS} <span class="text-[9px] font-medium text-slate-400">(${evanH})</span></span>
-                                    </div>
-                                    <span class="text-slate-200 italic font-bold text-[10px] w-[10%] text-center">VS</span>
-                                    <div class="flex items-center justify-end gap-2 w-[40%] text-right">
-                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-medium text-slate-400">(${steveH})</span> ${steveS}</span>
-                                        <span class="font-bold text-[10px] ${isStW ? 'text-emerald-700' : 'text-slate-400'}">STEVE</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-                
-                // Set the match win summary in the header
-                standingsEl.innerHTML = `
-                    <span class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30">Evan: ${evWins} Wins</span>
-                    <span class="bg-emerald-600/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30">Steve: ${stWins} Wins</span>
-                `;
-            } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading match scores.</p>`; }
-        }
-
-        // Run functions
-        fetchOverallDetails();
-        fetchMatchResults();
-    </script>
-</body>
-</html>
+            <p class="text
