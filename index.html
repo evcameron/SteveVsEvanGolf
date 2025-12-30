@@ -27,7 +27,7 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
-        .win-text { font-size: 7px; font-weight: 800; opacity: 0.6; margin-left: 2px; }
+        .win-text { font-size: 7px; font-weight: 800; opacity: 0.6; margin-left: 2px; text-transform: lowercase; }
         .evan-win-color { color: #93c5fd; }
         .steve-win-color { color: #6ee7b7; }
     </style>
@@ -65,7 +65,10 @@
                 <div id="breakdown-container" class="expanded">
                     <div class="pt-4 mb-2 flex justify-between text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
                         <span>CATEGORY / WEIGHT</span>
-                        <span class="w-40 text-center">EVAN | STEVE</span>
+                        <div class="w-48 flex justify-between px-2">
+                            <span class="w-20 text-left">EVAN</span>
+                            <span class="w-20 text-right">STEVE</span>
+                        </div>
                     </div>
                     <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
                 </div>
@@ -120,19 +123,19 @@
                     else {
                         list.innerHTML += `
                             <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                                <div class="flex items-center gap-2 truncate pr-1">
+                                <div class="flex items-center gap-1.5 truncate pr-1">
                                     <span class="opacity-70 truncate">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
-                                <div class="w-40 flex justify-end items-center gap-2 flex-shrink-0">
-                                    <div class="flex items-center">
+                                <div class="w-48 flex justify-between items-center px-2 flex-shrink-0">
+                                    <div class="flex items-center w-20 justify-start">
                                         <span class="text-blue-300 font-black">${evPts}</span>
-                                        <span class="win-text evan-win-color">${evWins}w</span>
+                                        <span class="win-text evan-win-color">${evWins} wins</span>
                                     </div>
-                                    <span class="text-white/10 mx-1">|</span>
-                                    <div class="flex items-center">
+                                    <span class="text-white/10">|</span>
+                                    <div class="flex items-center w-20 justify-end">
                                         <span class="text-emerald-300 font-black">${stPts}</span>
-                                        <span class="win-text steve-win-color">${stWins}w</span>
+                                        <span class="win-text steve-win-color">${stWins} wins</span>
                                     </div>
                                 </div>
                             </div>`;
@@ -179,11 +182,11 @@
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2 w-[42%]">
                                         <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span>
-                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evS} <span class="text-[9px] font-bold opacity-40">(${evH} holes)</span></span>
+                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evS} <span class="text-[9px] font-bold opacity-40">(${evH} holes won)</span></span>
                                     </div>
                                     <span class="text-slate-300 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
                                     <div class="flex items-center justify-end gap-2 w-[42%] text-right">
-                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-40">(${stH} holes)</span> ${stS}</span>
+                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-40">(${stH} holes won)</span> ${stS}</span>
                                         <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span>
                                     </div>
                                 </div>
