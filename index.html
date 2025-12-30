@@ -165,6 +165,7 @@
                     if (isEvW) bgClass = 'bg-evan-win';
                     else if (isStW) bgClass = 'bg-steve-win';
 
+                    // UPDATED: Changed opacity-40 to opacity-70 for the holes won label
                     container.innerHTML += `
                         <div class="flex flex-col">
                             ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif">🏆 ${maj}</span></div>` : ''}
@@ -176,11 +177,11 @@
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2 w-[42%]">
                                         <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span>
-                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evS} <span class="text-[9px] font-bold opacity-40">(${evH} holes won)</span></span>
+                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evS} <span class="text-[9px] font-bold opacity-70">(${evH} holes won)</span></span>
                                     </div>
                                     <span class="text-slate-300 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
                                     <div class="flex items-center justify-end gap-2 w-[42%] text-right">
-                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-40">(${stH} holes won)</span> ${stS}</span>
+                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-70">(${stH} holes won)</span> ${stS}</span>
                                         <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span>
                                     </div>
                                 </div>
