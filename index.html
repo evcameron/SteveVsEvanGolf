@@ -6,49 +6,90 @@
     <title>Whistle Post Cup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom Score Card Styles */
+        /* Card Styles */
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
-        
-        /* Win Indicators: Colored borders on the left based on who won */
-        .evan-win { border-left: 4px solid #3b82f6; }   /* Blue for Evan */
-        .steve-win { border-left: 4px solid #10b981; }  /* Green for Steve */
+        .evan-win { border-left: 4px solid #3b82f6; }
+        .steve-win { border-left: 4px solid #10b981; }
         
         /* Major Highlight Styles */
         .major-card { border: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
+
+        /* Header Card Styles (Glassmorphism) */
+        .header-card { 
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
 
-    <header class="bg-green-800 text-white p-4 text-center shadow-lg sticky top-0 z-10">
-        <h1 class="text-xl font-black uppercase italic tracking-tighter">Whistle Post Cup</h1>
-        <div id="standings" class="mt-2 flex justify-center gap-3 text-[10px] font-bold uppercase tracking-widest opacity-90 text-white">
+    <header class="bg-green-800 text-white p-4 text-center shadow-lg sticky top-0 z-20">
+        <h1 class="text-xl font-black uppercase italic tracking-tighter mb-3 text-white">Whistle Post Cup</h1>
+        
+        <div class="max-w-xs mx-auto header-card rounded-lg p-2 mb-2">
+            <p class="text-[9px] uppercase tracking-widest font-bold opacity-70 mb-1">Overall Cup Points</p>
+            <div class="flex justify-around items-center">
+                <div class="text-center">
+                    <span class="block text-[10px] font-bold uppercase opacity-80">Evan</span>
+                    <span id="evan-points" class="text-lg font-black text-blue-300">--</span>
+                </div>
+                <div class="h-6 w-[1px] bg-white/20"></div>
+                <div class="text-center">
+                    <span class="block text-[10px] font-bold uppercase opacity-80">Steve</span>
+                    <span id="steve-points" class="text-lg font-black text-emerald-300">--</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="standings" class="flex justify-center gap-3 text-[10px] font-bold uppercase tracking-widest opacity-90 text-white">
             </div>
     </header>
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
-            <p class="text-center py-10 text-slate-400 font-medium italic">Syncing scores from Google Sheets...</p>
+            <p class="text-center py-10 text-slate-400 font-medium italic">Syncing scores...</p>
         </div>
     </main>
 
     <script>
-        /**
-         * The URL points to your Google Sheet published as a CSV.
-         * The "cachebuster" forces the browser to fetch the latest data instead of a saved copy.
-         */
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&cachebuster=' + new Date().getTime();
+        // Tab 1: Match Results
+        const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
+        
+        // Tab 2: Whistle Post Cup - Details
+        const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
 
-        async function fetchResults() {
+        /**
+         * FETCH 1: Pulls the "Total" points from the Details tab
+         */
+        async function fetchOverallPoints() {
             try {
-                const response = await fetch(CSV_URL);
+                const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
-                
-                /**
-                 * CSV PARSING LOGIC
-                 * 1. Split text into rows (by newline).
-                 * 2. Split rows into columns (by comma), ignoring commas inside quotes.
-                 */
+                // Basic CSV split for the details tab
+                const rows = data.split(/\r?\n/).map(row => row.split(','));
+
+                rows.forEach(col => {
+                    // Check column 4 (index 3) for the word "Total"
+                    if (col[3]?.replace(/"/g, '').trim().toLowerCase() === 'total') {
+                        // Evan is Column 7 (index 6), Steve is Column 8 (index 7)
+                        document.getElementById('evan-points').innerText = col[6]?.replace(/"/g, '').trim();
+                        document.getElementById('steve-points').innerText = col[7]?.replace(/"/g, '').trim();
+                    }
+                });
+            } catch (e) {
+                console.error("Error fetching points:", e);
+            }
+        }
+
+        /**
+         * FETCH 2: Pulls the match list and calculates series wins
+         */
+        async function fetchMatchResults() {
+            try {
+                const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
+                const data = await response.text();
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
                 
                 const container = document.getElementById('results-list');
@@ -58,41 +99,31 @@
                 let evanWins = 0;
                 let steveWins = 0;
 
-                /**
-                 * DATA MAPPING
-                 * We slice(1) to skip the header row, then .reverse() to show the newest rounds first.
-                 */
                 const matchData = rows.slice(1).reverse();
 
                 matchData.forEach(col => {
-                    // Safety check: ensure the row has enough data
                     if (col.length < 7) return;
 
-                    // Mapping Google Sheet Columns to Variables
-                    const date      = col[1]?.replace(/"/g, '').trim(); // Column B
-                    const category  = col[2]?.replace(/"/g, '').trim(); // Column C
-                    const majorName = col[3]?.replace(/"/g, '').trim(); // Column D
-                    const isMajor   = majorName.length > 0;             // True if anything is in Major col
-                    const course    = col[4]?.replace(/"/g, '').trim(); // Column E
-                    const evanS     = parseInt(col[5]);                 // Column F
-                    const steveS    = parseInt(col[6]);                 // Column G
-                    const evanH     = col[7]?.trim() || "0";            // Column H
-                    const steveH    = col[8]?.trim() || "0";            // Column I
-                    const winner    = col[9]?.replace(/"/g, '').trim().toLowerCase(); // Column J
+                    const date      = col[1]?.replace(/"/g, '').trim();
+                    const category  = col[2]?.replace(/"/g, '').trim();
+                    const majorName = col[3]?.replace(/"/g, '').trim();
+                    const isMajor   = majorName.length > 0;
+                    const course    = col[4]?.replace(/"/g, '').trim();
+                    const evanS     = parseInt(col[5]);
+                    const steveS    = parseInt(col[6]);
+                    const evanH     = col[7]?.trim() || "0";
+                    const steveH    = col[8]?.trim() || "0";
+                    const winner    = col[9]?.replace(/"/g, '').trim().toLowerCase();
 
-                    // Skip the row if scores are not valid numbers
                     if (isNaN(evanS) || isNaN(steveS)) return;
 
-                    // Update series standings based on the Winner column
                     if (winner.includes('evan')) evanWins++;
                     else if (winner.includes('steve')) steveWins++;
 
-                    // Determine Winner Styling
                     const isEvanWinner = winner.includes('evan');
                     const isSteveWinner = winner.includes('steve');
                     const winCardClass = isEvanWinner ? 'evan-win' : (isSteveWinner ? 'steve-win' : '');
 
-                    // Major Badge: Only created if isMajor is true
                     const majorHeaderHtml = isMajor ? 
                         `<div class="flex">
                             <span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider shadow-sm ml-1">
@@ -100,7 +131,6 @@
                             </span>
                          </div>` : '';
 
-                    // Generate the HTML Card for this round
                     container.innerHTML += `
                         <div class="flex flex-col">
                             ${majorHeaderHtml}
@@ -109,7 +139,6 @@
                                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">${date} • ${course}</span>
                                     <span class="text-[9px] font-bold text-slate-300 uppercase">${category}</span>
                                 </div>
-                                
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3 w-[40%]">
                                         <span class="font-bold uppercase text-[10px] ${isEvanWinner ? 'text-blue-700' : 'text-slate-400'}">EVAN</span>
@@ -118,9 +147,7 @@
                                             <span class="text-[9px] text-slate-400 font-medium">(${evanH})</span>
                                         </div>
                                     </div>
-
                                     <span class="text-slate-200 italic font-bold text-[10px] w-[10%] text-center tracking-tighter">VS</span>
-
                                     <div class="flex items-center justify-end gap-3 w-[40%] text-right">
                                         <div class="flex items-baseline gap-1">
                                             <span class="text-[9px] text-slate-400 font-medium">(${steveH})</span>
@@ -130,24 +157,22 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
 
-                // Update the Header Standings with total win counts
                 standingsEl.innerHTML = `
-                    <span class="bg-blue-600 px-2 py-0.5 rounded shadow-sm">Evan: ${evanWins}</span>
-                    <span class="bg-emerald-600 px-2 py-0.5 rounded shadow-sm">Steve: ${steveWins}</span>
+                    <span class="bg-blue-600 px-2 py-0.5 rounded shadow-sm text-white">Match Wins: ${evanWins}</span>
+                    <span class="bg-emerald-600 px-2 py-0.5 rounded shadow-sm text-white">Match Wins: ${steveWins}</span>
                 `;
 
             } catch (e) {
-                console.error("Fetch Error:", e);
-                container.innerHTML = `<p class="text-center text-red-500 font-bold p-10">❌ Failed to load scores. Check internet connection.</p>`;
+                container.innerHTML = `<p class="text-center text-red-500 font-bold p-10">❌ Failed to load scores.</p>`;
             }
         }
-        
-        // Run the function as soon as the page loads
-        fetchResults();
+
+        // Run both functions
+        fetchOverallPoints();
+        fetchMatchResults();
     </script>
 </body>
 </html>
