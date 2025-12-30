@@ -64,8 +64,7 @@
                         <span id="display-year">2026</span>
                         <svg class="w-2 h-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div id="year-menu" class="year-menu">
-                        </div>
+                    <div id="year-menu" class="year-menu"></div>
                 </div>
             </div>
             
@@ -135,11 +134,7 @@
         let activeFilter = null;
         let availableYears = new Set();
 
-        function toggleYearMenu(e) {
-            e.stopPropagation();
-            document.getElementById('year-menu').classList.toggle('show');
-        }
-
+        function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
         window.onclick = () => document.getElementById('year-menu').classList.remove('show');
 
         function changeYear(year) {
@@ -173,15 +168,12 @@
                 rows.forEach(col => {
                     const rowYear = col[5]?.replace(/"/g, '').trim(); 
                     if (rowYear && rowYear !== "Year") availableYears.add(rowYear);
-
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
 
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
-                    const evPts = col[6]?.replace(/"/g, '').trim(); 
-                    const stPts = col[7]?.replace(/"/g, '').trim(); 
-                    const evWins = col[8]?.replace(/"/g, '').trim(); 
-                    const stWins = col[9]?.replace(/"/g, '').trim(); 
+                    const evPts = col[6]?.replace(/"/g, '').trim(), stPts = col[7]?.replace(/"/g, '').trim();
+                    const evWins = col[8]?.replace(/"/g, '').trim(), stWins = col[9]?.replace(/"/g, '').trim();
 
                     if (label.toLowerCase() === 'total') {
                         document.getElementById('evan-points').innerText = evPts;
@@ -236,9 +228,10 @@
                 const evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : 'border-9hole');
+                
                 container.innerHTML += `
                     <div class="flex flex-col">
-                        ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase italic">🏆 ${maj}</span></div>` : ''}
+                        ${maj ? `<div class="flex justify-end pr-4"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>` : ''}
                         <div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
@@ -272,7 +265,9 @@
             document.getElementById('active-filter-name').innerText = cat;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
-            document.getElementById('breakdown-container').classList.replace('collapsed', 'expanded');
+            const container = document.getElementById('breakdown-container');
+            container.classList.remove('collapsed');
+            container.classList.add('expanded');
             document.getElementById('chevron-icon').classList.remove('rotate-180');
             document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -284,11 +279,7 @@
             renderMatches();
         }
 
-        function refreshData() {
-            fetchOverallDetails();
-            fetchMatchResults();
-        }
-
+        function refreshData() { fetchOverallDetails(); fetchMatchResults(); }
         refreshData();
     </script>
 </body>
