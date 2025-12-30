@@ -39,7 +39,7 @@
 
     <header class="bg-green-950 text-white shadow-2xl sticky top-0 z-20">
         <div class="bg-black/20 px-4 py-1.5 flex justify-end items-center border-b border-white/5">
-            <span class="text-[8px] font-black uppercase tracking-[0.2em] opacity-50">2026 Season</span>
+            <span id="display-year" class="text-[8px] font-black uppercase tracking-[0.2em] opacity-50">SEASON</span>
         </div>
 
         <div class="p-4 pt-6">
@@ -104,13 +104,21 @@
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3 pt-2">
-            <p class="text-center py-10 text-slate-400 italic">Accessing 2026 Season Records...</p>
+            <p class="text-center py-10 text-slate-400 italic">Accessing Season Records...</p>
         </div>
     </main>
 
     <script>
+        // --- CONFIGURATION ---
+        const CONFIG = {
+            WebsiteYear: "2026"
+        };
+        // ---------------------
+
         const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
         const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
+
+        document.getElementById('display-year').innerText = `${CONFIG.WebsiteYear} SEASON`;
 
         function toggleBreakdown() {
             const container = document.getElementById('breakdown-container');
@@ -134,15 +142,18 @@
                 let tournamentCount = 0;
 
                 rows.forEach(col => {
-                    const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
+                    const rowYear = col[5]?.replace(/"/g, '').trim(); // 6th column (index 5)
                     const label = col[3]?.replace(/"/g, '').trim(); 
+                    
+                    if (!label || label === "Category" || label === "") return;
+                    if (rowYear !== CONFIG.WebsiteYear) return; // Year Filter
+
+                    const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
                     const weight = col[4]?.replace(/"/g, '').trim(); 
                     const evPts = col[6]?.replace(/"/g, '').trim(); 
                     const stPts = col[7]?.replace(/"/g, '').trim(); 
                     const evWins = col[8]?.replace(/"/g, '').trim(); 
                     const stWins = col[9]?.replace(/"/g, '').trim(); 
-
-                    if (!label || label === "Category" || label === "") return;
 
                     if (label.toLowerCase() === 'total') {
                         document.getElementById('evan-points').innerText = evPts;
@@ -185,7 +196,14 @@
 
                 rows.slice(1).reverse().forEach(col => {
                     if (col.length < 10) return;
-                    const date = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
+                    
+                    const dateStr = col[1]?.trim();
+                    if (!dateStr) return;
+                    
+                    // Filter matches by extracting year from date string (Expected format DD-MM-YYYY or similar)
+                    if (!dateStr.includes(CONFIG.WebsiteYear)) return;
+
+                    const cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                     const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
                     const winnerText = col[9]?.trim().toLowerCase();
 
@@ -212,7 +230,7 @@
                             ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif">🏆 ${maj}</span></div>` : ''}
                             <div class="score-card px-3 py-2 flex flex-col ${catClass} ${bgClass} ${majorClass}">
                                 <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
-                                    <span class="text-[9px] font-bold uppercase tracking-tight">${date} • ${course}</span>
+                                    <span class="text-[9px] font-bold uppercase tracking-tight">${dateStr} • ${course}</span>
                                     <span class="text-[9px] font-bold uppercase">${cat}</span>
                                 </div>
                                 <div class="flex items-center justify-between">
