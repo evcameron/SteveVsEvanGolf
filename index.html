@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <style>
     /* ... existing styles ... */
     
@@ -70,3 +72,142 @@
         </div>
         </div>
 </header>
+
+    <main class="max-w-md mx-auto p-3">
+        <div id="results-list" class="space-y-3">
+            <p class="text-center py-10 text-slate-400 italic">Syncing scores...</p>
+        </div>
+    </main>
+
+    <script>
+        const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
+        const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
+
+        function toggleBreakdown() {
+            const container = document.getElementById('breakdown-container');
+            const icon = document.getElementById('chevron-icon');
+            if (container.classList.contains('expanded')) {
+                container.classList.replace('expanded', 'collapsed');
+                icon.classList.add('rotate-180');
+            } else {
+                container.classList.replace('collapsed', 'expanded');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        async function fetchOverallDetails() {
+            try {
+                const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
+                const data = await response.text();
+                const rows = data.split(/\r?\n/).map(row => row.split(','));
+                const list = document.getElementById('breakdown-list');
+                list.innerHTML = '';
+                let tournamentCount = 0;
+
+                rows.forEach(col => {
+                    const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
+                    const label = col[3]?.replace(/"/g, '').trim(); 
+                    const weight = col[4]?.replace(/"/g, '').trim(); 
+                    const evPts = col[6]?.replace(/"/g, '').trim(); 
+                    const stPts = col[7]?.replace(/"/g, '').trim(); 
+                    const evWins = col[8]?.replace(/"/g, '').trim(); 
+                    const stWins = col[9]?.replace(/"/g, '').trim(); 
+
+                    if (!label || label === "Category" || label === "") return;
+
+                    if (label.toLowerCase() === 'total') {
+                        document.getElementById('evan-points').innerText = evPts;
+                        document.getElementById('steve-points').innerText = stPts;
+                    } 
+                    else {
+                        tournamentCount++;
+                        const isMajor = type.includes('major');
+                        const evWinDisp = isMajor ? '' : `${evWins}w`;
+                        const stWinDisp = isMajor ? '' : `${stWins}w`;
+
+                        list.innerHTML += `
+                            <div class="flex items-center border-b border-white/5 pb-1">
+                                <div class="flex-grow flex items-center gap-1 truncate pr-1">
+                                    <span class="opacity-70 truncate">${label}</span>
+                                    ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
+                                </div>
+                                <div class="flex w-52 text-center items-center flex-shrink-0">
+                                    <span class="w-12 text-blue-300 font-black">${evPts}</span>
+                                    <span class="w-12 text-emerald-300 font-black border-r border-white/10">${stPts}</span>
+                                    <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${evWinDisp}</span>
+                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWinDisp}</span>
+                                </div>
+                            </div>`;
+                        if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
+                    }
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchMatchResults() {
+            try {
+                const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
+                const data = await response.text();
+                const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+                const container = document.getElementById('results-list');
+                container.innerHTML = '';
+                let evTotalWins = 0, stTotalWins = 0;
+                let ev18Wins = 0, st18Wins = 0;
+
+                rows.slice(1).reverse().forEach(col => {
+                    if (col.length < 10) return;
+                    const date = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
+                    const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
+                    const winnerText = col[9]?.trim().toLowerCase();
+
+                    if (!evS || !stS) return;
+
+                    const isEvW = winnerText.includes('evan');
+                    const isStW = winnerText.includes('steve');
+
+                    if (isEvW) evTotalWins++;
+                    if (isStW) stTotalWins++;
+                    
+                    if (cat.toLowerCase() === "18 hole round") {
+                        if (isEvW) ev18Wins++;
+                        if (isStW) st18Wins++;
+                    }
+
+                    let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.toLowerCase().includes('18') ? 'border-18hole' : (cat.toLowerCase().includes('9') ? 'border-9hole' : 'border-other'));
+                    let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
+
+                    container.innerHTML += `
+                        <div class="flex flex-col">
+                            ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif">🏆 ${maj}</span></div>` : ''}
+                            <div class="score-card px-3 py-2 flex flex-col ${catClass} ${bgClass} ${maj ? 'major-card' : ''}">
+                                <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
+                                    <span class="text-[9px] font-bold uppercase tracking-tight">${date} • ${course}</span>
+                                    <span class="text-[9px] font-bold uppercase">${cat}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 w-[42%]">
+                                        <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span>
+                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evS} <span class="text-[9px] font-bold opacity-70">(${evH} holes won)</span></span>
+                                    </div>
+                                    <span class="text-slate-300 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
+                                    <div class="flex items-center justify-end gap-2 w-[42%] text-right">
+                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-70">(${stH} holes won)</span> ${stS}</span>
+                                        <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                
+                document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
+                document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
+                document.getElementById('evan-18-wins').innerText = `${ev18Wins} Wins (ex DP)`;
+                document.getElementById('steve-18-wins').innerText = `${st18Wins} Wins (ex DP)`;
+            } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
+        }
+
+        fetchOverallDetails();
+        fetchMatchResults();
+    </script>
+</body>
+</html>
