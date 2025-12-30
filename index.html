@@ -23,7 +23,8 @@
         }
         .major-header { background: #fbbf24; color: #78350f; }
         
-        .header-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); }
+        /* Updated header card for light/dark visibility */
+        .header-card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); color: white; }
         
         #breakdown-container { transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out; overflow: hidden; }
         .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
@@ -38,58 +39,53 @@
         .category-row:hover { background: rgba(255,255,255,0.08); }
         
         .category-row.active-filter { 
-            background: rgba(59, 130, 246, 0.2); 
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+            background: rgba(59, 130, 246, 0.3); 
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
         }
 
-        /* Entire card is clickable */
         .clickable-card { cursor: pointer; transition: background 0.2s; }
-        .clickable-card:hover { background: rgba(255, 255, 255, 0.08); }
+        .clickable-card:hover { background: rgba(15, 23, 42, 0.95); }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
 
-    <header class="bg-green-950 text-white shadow-2xl sticky top-0 z-20">
-        <div class="bg-black/20 px-4 py-1.5 flex justify-end items-center border-b border-white/5">
-            <span id="display-year" class="text-[8px] font-black uppercase tracking-[0.2em] opacity-50">SEASON</span>
-        </div>
-
-        <div class="p-4 pt-6">
-            <div class="max-w-sm mx-auto mb-6 text-left">
+    <header class="bg-white border-b border-slate-200 pt-4 pb-2 sticky top-0 z-20">
+        <div class="max-w-sm mx-auto px-4">
+            <div class="flex items-end justify-between mb-4">
                 <h1 class="flex flex-col leading-none">
-                    <span class="text-[10px] font-bold tracking-[0.4em] text-green-400 uppercase mb-1">The Annual</span>
-                    <span class="text-3xl font-black uppercase tracking-tighter italic">
-                        Whistle Post <span class="text-green-400 not-italic font-light">CUP</span>
+                    <span class="text-[9px] font-bold tracking-[0.4em] text-green-700 uppercase mb-0.5">The Annual</span>
+                    <span class="text-2xl font-black uppercase tracking-tighter italic text-slate-900">
+                        Whistle Post <span class="text-green-600 not-italic font-light">CUP</span>
                     </span>
                 </h1>
+                <div class="border-2 border-slate-900 px-2 py-0.5 rounded text-[11px] font-black italic tracking-tighter">
+                    <span id="display-year">2026</span>
+                </div>
             </div>
             
-            <div class="flex flex-col gap-2 max-w-sm mx-auto">
-                <div class="header-card rounded-xl p-4 shadow-lg">
-                    <p class="text-[9px] uppercase tracking-[0.2em] font-black opacity-40 mb-3 text-center">Current Standings</p>
+            <div class="flex flex-col gap-2">
+                <div class="header-card rounded-xl p-3 shadow-lg">
                     <div class="flex justify-around items-center">
                         <div class="text-center w-28">
-                            <span class="block text-[10px] font-black uppercase opacity-40 mb-1">Evan</span>
-                            <span id="evan-points" class="text-3xl font-black text-blue-400 drop-shadow-md">--</span>
-                            <div class="mt-2 flex flex-col gap-0.5 leading-tight">
-                                <span id="evan-wins-stat" class="text-[9px] font-black uppercase text-blue-300/60 tracking-wider">-- Wins</span>
-                                <span id="evan-18-wins" class="text-[8px] font-bold uppercase text-white/30">-- Wins (ex DP)</span>
+                            <span class="block text-[9px] font-black uppercase opacity-40 mb-0.5">Evan</span>
+                            <span id="evan-points" class="text-2xl font-black text-blue-400">--</span>
+                            <div class="mt-1 flex flex-col leading-none">
+                                <span id="evan-wins-stat" class="text-[8px] font-black uppercase text-blue-300/60">-- Wins</span>
                             </div>
                         </div>
-                        <div class="h-14 w-[1px] bg-white/10"></div>
-                        <div class="text-center w-28">
-                            <span class="block text-[10px] font-black uppercase opacity-40 mb-1">Steve</span>
-                            <span id="steve-points" class="text-3xl font-black text-emerald-400 drop-shadow-md">--</span>
-                            <div class="mt-2 flex flex-col gap-0.5 leading-tight">
-                                <span id="steve-wins-stat" class="text-[9px] font-black uppercase text-emerald-300/60 tracking-wider">-- Wins</span>
-                                <span id="steve-18-wins" class="text-[8px] font-bold uppercase text-white/30">-- Wins (ex DP)</span>
+                        <div class="h-10 w-[1px] bg-white/10"></div>
+                        <div class="text-center w-28 text-white">
+                            <span class="block text-[9px] font-black uppercase opacity-40 mb-0.5">Steve</span>
+                            <span id="steve-points" class="text-2xl font-black text-emerald-400">--</span>
+                            <div class="mt-1 flex flex-col leading-none">
+                                <span id="steve-wins-stat" class="text-[8px] font-black uppercase text-emerald-300/60">-- Wins</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="main-breakdown-card" onclick="toggleBreakdown()" class="header-card clickable-card rounded-xl px-4 py-3 text-left">
+                <div id="main-breakdown-card" onclick="toggleBreakdown()" class="header-card clickable-card rounded-xl px-3 py-2 text-left">
                     <div class="w-full flex justify-between items-center">
                         <p class="text-[9px] uppercase tracking-[0.2em] font-black opacity-40">Points Breakdown</p>
                         <div class="bg-white/10 p-1 rounded-md">
@@ -99,16 +95,16 @@
                         </div>
                     </div>
                     <div id="breakdown-container" class="collapsed">
-                        <div class="pt-4 mb-2 flex text-[7px] uppercase font-black opacity-30 border-b border-white/5 pb-1">
-                            <span class="flex-grow">CATEGORY (CLICK TO FILTER)</span>
+                        <div class="pt-3 mb-2 flex text-[7px] uppercase font-black opacity-30 border-b border-white/5 pb-1">
+                            <span class="flex-grow">CATEGORY</span>
                             <div class="flex w-52 text-center">
-                                <span class="w-12">EVAN PTS</span>
-                                <span class="w-12 border-r border-white/5">STEVE PTS</span>
-                                <span class="w-12 ml-1">EVAN W</span>
-                                <span class="w-12">STEVE W</span>
+                                <span class="w-12">EVAN</span>
+                                <span class="w-12 border-r border-white/5">STEVE</span>
+                                <span class="w-12 ml-1">E-W</span>
+                                <span class="w-12">S-W</span>
                             </div>
                         </div>
-                        <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
+                        <div id="breakdown-list" class="space-y-1.5 text-[10px] font-bold uppercase"></div>
                     </div>
                 </div>
             </div>
@@ -118,10 +114,10 @@
     <main class="max-w-md mx-auto p-3">
         <div id="filter-status" class="hidden mb-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
             <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                Filtered: <span id="active-filter-name">None</span>
+                Showing: <span id="active-filter-name">None</span>
             </span>
             <button onclick="resetFilter()" class="text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">
-                Clear Filter
+                Clear
             </button>
         </div>
 
@@ -138,7 +134,7 @@
         let allMatches = []; 
         let activeFilter = null;
 
-        document.getElementById('display-year').innerText = `${CONFIG.WebsiteYear} SEASON`;
+        document.getElementById('display-year').innerText = CONFIG.WebsiteYear;
 
         function toggleBreakdown() {
             const container = document.getElementById('breakdown-container');
@@ -167,7 +163,6 @@
                     if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
 
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
-                    const weight = col[4]?.replace(/"/g, '').trim(); 
                     const evPts = col[6]?.replace(/"/g, '').trim(); 
                     const stPts = col[7]?.replace(/"/g, '').trim(); 
                     const evWins = col[8]?.replace(/"/g, '').trim(); 
@@ -186,9 +181,8 @@
                         list.innerHTML += `
                             <div onclick="applyFilter('${label}', this, event)" 
                                  class="category-row flex items-center border-b border-white/5 pb-1">
-                                <div class="flex-grow flex items-center gap-1 truncate pr-1">
+                                <div class="flex-grow truncate pr-1">
                                     <span class="opacity-70 truncate">${label}</span>
-                                    ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
                                     <span class="w-12 text-blue-300 font-black">${evPts}</span>
@@ -258,34 +252,25 @@
         }
 
         function updateStats() {
-            let evTotalWins = 0, stTotalWins = 0, ev18Wins = 0, st18Wins = 0;
+            let evTotalWins = 0, stTotalWins = 0;
             allMatches.forEach(col => {
-                const winnerText = col[9]?.trim().toLowerCase(), cat = col[2]?.trim();
-                const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
-                if (isEvW) evTotalWins++; if (isStW) stTotalWins++;
-                if (cat.toLowerCase().includes("18 hole") && !cat.toLowerCase().includes("dentonia")) {
-                    if (isEvW) ev18Wins++; if (isStW) st18Wins++;
-                }
+                const winnerText = col[9]?.trim().toLowerCase();
+                if (winnerText.includes('evan')) evTotalWins++; 
+                if (winnerText.includes('steve')) stTotalWins++;
             });
             document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
             document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
-            document.getElementById('evan-18-wins').innerText = `${ev18Wins} Wins (ex DP)`;
-            document.getElementById('steve-18-wins').innerText = `${st18Wins} Wins (ex DP)`;
         }
 
         function applyFilter(categoryName, element, event) {
-            // CRITICAL: Stop the click from reaching main-breakdown-card and toggling collapse
             if (event) event.stopPropagation();
-
             document.querySelectorAll('.category-row').forEach(row => row.classList.remove('active-filter'));
             element.classList.add('active-filter');
-            
             activeFilter = categoryName;
             document.getElementById('active-filter-name').innerText = categoryName;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
-
-            // Ensure it's expanded
+            
             const container = document.getElementById('breakdown-container');
             const icon = document.getElementById('chevron-icon');
             container.classList.remove('collapsed');
