@@ -1,77 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
-    /* ... existing styles ... */
-    
-    .header-gradient {
-        background: radial-gradient(circle at center, #166534 0%, #064e3b 100%);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    /* Subtle grass-like texture overlay */
-    .header-gradient::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
-        opacity: 0.1;
-        pointer-events: none;
-    }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whistle Post Cup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left-width: 5px; }
+        .bg-evan-win  { background: linear-gradient(to right, #dbeafe, #ffffff); } 
+        .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
+        .bg-draw      { background: #ffffff; }
 
-    .title-glow {
-        text-shadow: 0 0 20px rgba(255,255,255,0.2);
-    }
-    
-    .gold-accent {
-        background: linear-gradient(to bottom, #fbbf24, #d97706);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-</style>
+        .border-dentonia { border-left-color: #94a3b8; }
+        .border-18hole   { border-left-color: #3b82f6; }
+        .border-9hole    { border-left-color: #8b5cf6; }
+        .border-other    { border-left-color: #cbd5e1; }
 
-<header class="header-gradient text-white p-6 text-center shadow-2xl sticky top-0 z-20 border-b border-white/10">
-    <div class="flex justify-center items-center gap-3 mb-1">
-        <div class="h-[1px] w-8 bg-gradient-to-r from-transparent to-yellow-500/50"></div>
-        <span class="text-[10px] font-black tracking-[0.3em] text-yellow-500 uppercase">Est. 2024</span>
-        <div class="h-[1px] w-8 bg-gradient-to-l from-transparent to-yellow-500/50"></div>
-    </div>
+        .major-card { border-top: 2px solid #fbbf24; border-right: 2px solid #fbbf24; border-bottom: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
+        .major-header { background: #fbbf24; color: #78350f; }
+        
+        .header-card { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
+        #breakdown-container { transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out; overflow: hidden; }
+        .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
+        .expanded { max-height: 1000px; opacity: 1; }
+        .chevron { transition: transform 0.3s ease; }
+        .rotate-180 { transform: rotate(180deg); }
+        
+        .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
+        .points-divider { border-bottom: 2px solid rgba(255, 255, 255, 0.15); margin: 12px 0; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
 
-    <h1 class="text-3xl font-black uppercase italic tracking-tighter title-glow leading-none mb-4">
-        Whistle Post <span class="gold-accent not-italic font-serif">Cup</span>
-    </h1>
-    
-    <div class="flex flex-col gap-2 max-w-sm mx-auto relative z-10">
-        <div class="header-card rounded-lg p-3 shadow-inner">
-            <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 mb-2 text-yellow-100/80">Current Standings</p>
-            <div class="flex justify-around items-center">
-                <div class="text-center w-24">
-                    <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
-                    <span id="evan-points" class="text-3xl font-black text-blue-300 drop-shadow-sm">--</span>
-                    <div class="mt-2 space-y-0.5">
-                        <span id="evan-wins-stat" class="block text-[9px] font-black uppercase text-blue-300/80 tracking-widest">-- Wins</span>
-                        <span id="evan-18-wins" class="block text-[8px] font-bold uppercase text-white/40 border-t border-white/5 pt-1">-- Wins (ex DP)</span>
+    <header class="bg-green-800 text-white p-4 text-center shadow-lg sticky top-0 z-20">
+        <h1 class="text-xl font-black uppercase italic tracking-tighter mb-4">Whistle Post Cup</h1>
+        
+        <div class="flex flex-col gap-2 max-w-sm mx-auto">
+            <div class="header-card rounded-lg p-3">
+                <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 mb-2">Overall Cup Totals</p>
+                <div class="flex justify-around items-center">
+                    <div class="text-center w-24">
+                        <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
+                        <span id="evan-points" class="text-2xl font-black text-blue-300">--</span>
+                        <div class="mt-1 leading-tight">
+                            <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- Wins</span>
+                            <span id="evan-18-wins" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- Wins (ex DP)</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="flex flex-col items-center opacity-20">
-                    <div class="h-6 w-[1px] bg-white"></div>
-                    <span class="text-lg">⛳</span>
-                    <div class="h-6 w-[1px] bg-white"></div>
-                </div>
-
-                <div class="text-center w-24">
-                    <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Steve</span>
-                    <span id="steve-points" class="text-3xl font-black text-emerald-300 drop-shadow-sm">--</span>
-                    <div class="mt-2 space-y-0.5">
-                        <span id="steve-wins-stat" class="block text-[9px] font-black uppercase text-emerald-300/80 tracking-widest">-- Wins</span>
-                        <span id="steve-18-wins" class="block text-[8px] font-bold uppercase text-white/40 border-t border-white/5 pt-1">-- Wins (ex DP)</span>
+                    <div class="h-12 w-[1px] bg-white/20"></div>
+                    <div class="text-center w-24">
+                        <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Steve</span>
+                        <span id="steve-points" class="text-2xl font-black text-emerald-300">--</span>
+                        <div class="mt-1 leading-tight">
+                            <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- Wins</span>
+                            <span id="steve-18-wins" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- Wins (ex DP)</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="header-card rounded-lg p-3 text-left">
+                <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none">
+                    <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">Points Breakdown</p>
+                    <svg id="chevron-icon" class="chevron rotate-180 w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                </button>
+                <div id="breakdown-container" class="collapsed">
+                    <div class="pt-4 mb-2 flex text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
+                        <span class="flex-grow">CATEGORY</span>
+                        <div class="flex w-52 text-center">
+                            <span class="w-12">Evan Pts</span>
+                            <span class="w-12 border-r border-white/10">Steve Pts</span>
+                            <span class="w-12 ml-1">Evan Wins</span>
+                            <span class="w-12">Steve Wins</span>
+                        </div>
+                    </div>
+                    <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
+                </div>
+            </div>
         </div>
-        </div>
-</header>
+    </header>
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
@@ -168,12 +177,13 @@
                     if (isEvW) evTotalWins++;
                     if (isStW) stTotalWins++;
                     
-                    if (cat.toLowerCase() === "18 hole round") {
+                    const lowerCat = cat.toLowerCase();
+                    if (lowerCat.includes("18 hole") && !lowerCat.includes("dentonia")) {
                         if (isEvW) ev18Wins++;
                         if (isStW) st18Wins++;
                     }
 
-                    let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.toLowerCase().includes('18') ? 'border-18hole' : (cat.toLowerCase().includes('9') ? 'border-9hole' : 'border-other'));
+                    let catClass = lowerCat.includes('dentonia') ? 'border-dentonia' : (lowerCat.includes('18') ? 'border-18hole' : (lowerCat.includes('9') ? 'border-9hole' : 'border-other'));
                     let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
 
                     container.innerHTML += `
