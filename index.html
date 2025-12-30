@@ -27,7 +27,6 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
-        .win-label { font-size: 7px; font-weight: 800; opacity: 0.5; margin-left: 1px; text-transform: lowercase; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -65,8 +64,8 @@
                         <span class="flex-grow">CATEGORY</span>
                         <div class="flex w-52 text-center">
                             <span class="w-12">EV PTS</span>
-                            <span class="w-12 border-r border-white/10">EV W</span>
-                            <span class="w-12 ml-1">ST PTS</span>
+                            <span class="w-12 border-r border-white/10">ST PTS</span>
+                            <span class="w-12 ml-1">EV W</span>
                             <span class="w-12">ST W</span>
                         </div>
                     </div>
@@ -129,8 +128,8 @@
                                 </div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
                                     <span class="w-12 text-blue-300 font-black">${evPts}</span>
-                                    <span class="w-12 text-blue-300/60 text-[8px] border-r border-white/10">${evWins}w</span>
-                                    <span class="w-12 ml-1 text-emerald-300 font-black">${stPts}</span>
+                                    <span class="w-12 text-emerald-300 font-black border-r border-white/10">${stPts}</span>
+                                    <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${evWins}w</span>
                                     <span class="w-12 text-emerald-300/60 text-[8px]">${stWins}w</span>
                                 </div>
                             </div>`;
