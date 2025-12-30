@@ -27,7 +27,6 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
-        /* Style for the custom divider */
         .points-divider { border-bottom: 2px solid rgba(255, 255, 255, 0.15); margin: 12px 0; }
     </style>
 </head>
@@ -43,13 +42,19 @@
                     <div class="text-center w-24">
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
                         <span id="evan-points" class="text-2xl font-black text-blue-300">--</span>
-                        <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 mt-1 tracking-wider">-- Wins</span>
+                        <div class="mt-1 leading-tight">
+                            <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- Total W</span>
+                            <span id="evan-18-wins" class="block text-[8px] font-bold uppercase text-white/40 tracking-tight">-- 18-Hole W</span>
+                        </div>
                     </div>
                     <div class="h-12 w-[1px] bg-white/20"></div>
                     <div class="text-center w-24">
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Steve</span>
                         <span id="steve-points" class="text-2xl font-black text-emerald-300">--</span>
-                        <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 mt-1 tracking-wider">-- Wins</span>
+                        <div class="mt-1 leading-tight">
+                            <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- Total W</span>
+                            <span id="steve-18-wins" class="block text-[8px] font-bold uppercase text-white/40 tracking-tight">-- 18-Hole W</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,7 +111,6 @@
                 const rows = data.split(/\r?\n/).map(row => row.split(','));
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
-
                 let tournamentCount = 0;
 
                 rows.forEach(col => {
@@ -143,11 +147,7 @@
                                     <span class="w-12 text-emerald-300/60 text-[8px]">${stWinDisp}</span>
                                 </div>
                             </div>`;
-
-                        // Insert the divider after the 3rd valid tournament row
-                        if (tournamentCount === 3) {
-                            list.innerHTML += `<div class="points-divider"></div>`;
-                        }
+                        if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
                     }
                 });
             } catch (e) { console.error(e); }
@@ -160,25 +160,34 @@
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
                 const container = document.getElementById('results-list');
                 container.innerHTML = '';
-                let evWins = 0, stWins = 0;
+                let evTotalWins = 0, stTotalWins = 0;
+                let ev18Wins = 0, st18Wins = 0;
 
                 rows.slice(1).reverse().forEach(col => {
-                    if (col.length < 7) return;
+                    if (col.length < 10) return; // Ensure winner column exists
                     const date = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
-                    const evS = parseInt(col[5]), stS = parseInt(col[6]), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
-                    const win = col[9]?.trim().toLowerCase();
-                    if (isNaN(evS) || isNaN(stS)) return;
-                    if (win.includes('evan')) evWins++; else if (win.includes('steve')) stWins++;
-                    const isEvW = win.includes('evan'), isStW = win.includes('steve');
+                    const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
+                    const winnerText = col[9]?.trim().toLowerCase();
 
-                    let catClass = 'border-other';
-                    if (cat.toLowerCase().includes('dentonia')) catClass = 'border-dentonia';
-                    else if (cat.toLowerCase().includes('18')) catClass = 'border-18hole';
-                    else if (cat.toLowerCase().includes('9')) catClass = 'border-9hole';
+                    // SKIP: If the row is empty or has no score data
+                    if (!evS || !stS) return;
 
-                    let bgClass = 'bg-draw';
-                    if (isEvW) bgClass = 'bg-evan-win';
-                    else if (isStW) bgClass = 'bg-steve-win';
+                    // IDENTIFY WINNER: Strict reliance on the "Winner" column
+                    const isEvW = winnerText.includes('evan');
+                    const isStW = winnerText.includes('steve');
+
+                    // Update Global Stats
+                    if (isEvW) evTotalWins++;
+                    if (isStW) stTotalWins++;
+                    
+                    if (cat.toLowerCase() === "18 hole rounds") {
+                        if (isEvW) ev18Wins++;
+                        if (isStW) st18Wins++;
+                    }
+
+                    // Card Classes
+                    let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.toLowerCase().includes('18') ? 'border-18hole' : (cat.toLowerCase().includes('9') ? 'border-9hole' : 'border-other'));
+                    let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
 
                     container.innerHTML += `
                         <div class="flex flex-col">
@@ -202,8 +211,11 @@
                             </div>
                         </div>`;
                 });
-                document.getElementById('evan-wins-stat').innerText = `${evWins} Wins`;
-                document.getElementById('steve-wins-stat').innerText = `${stWins} Wins`;
+                
+                document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
+                document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
+                document.getElementById('evan-18-wins').innerText = `${ev18Wins} 18-Hole W`;
+                document.getElementById('steve-18-wins').innerText = `${st18Wins} 18-Hole W`;
             } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
         }
 
