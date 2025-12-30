@@ -25,12 +25,15 @@
             transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out;
             overflow: hidden;
         }
-        .collapsed { max-height: 0 !important; opacity: 0; }
-        .expanded { max-height: 500px; opacity: 1; }
+        .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
+        .expanded { max-height: 600px; opacity: 1; }
         
         /* Rotation for the toggle arrow */
         .chevron { transition: transform 0.3s ease; }
         .rotate-180 { transform: rotate(180deg); }
+
+        /* Weighting Badge Style */
+        .weight-badge { background: rgba(255, 255, 255, 0.15); padding: 1px 4px; border-radius: 4px; color: rgba(255,255,255,0.5); font-size: 8px; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -63,7 +66,11 @@
                     </svg>
                 </button>
 
-                <div id="breakdown-container" class="expanded mt-3">
+                <div id="breakdown-container" class="expanded">
+                    <div class="pt-3 mb-1 flex justify-between text-[7px] uppercase tracking-tighter opacity-40 font-bold border-b border-white/10 pb-1">
+                        <span>Category / Weight</span>
+                        <span>Evan / Steve</span>
+                    </div>
                     <div id="breakdown-list" class="space-y-1.5 text-[10px] font-bold uppercase">
                         </div>
                 </div>
@@ -75,4 +82,122 @@
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
-            <p class="text
+            <p class="text-center py-10 text-slate-400 italic">Syncing scores...</p>
+        </div>
+    </main>
+
+    <script>
+        const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
+        const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
+
+        function toggleBreakdown() {
+            const container = document.getElementById('breakdown-container');
+            const icon = document.getElementById('chevron-icon');
+            
+            if (container.classList.contains('expanded')) {
+                container.classList.replace('expanded', 'collapsed');
+                icon.classList.add('rotate-180');
+            } else {
+                container.classList.replace('collapsed', 'expanded');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        async function fetchOverallDetails() {
+            try {
+                const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
+                const data = await response.text();
+                // We use a simple comma split here; if labels have commas, we may need the complex regex
+                const rows = data.split(/\r?\n/).map(row => row.split(','));
+                const breakdownList = document.getElementById('breakdown-list');
+                breakdownList.innerHTML = '';
+
+                rows.forEach(col => {
+                    const label = col[3]?.replace(/"/g, '').trim(); // Column 4
+                    const weight = col[4]?.replace(/"/g, '').trim(); // Column 5 (New Weighting)
+                    const evanVal = col[6]?.replace(/"/g, '').trim(); // Column 7
+                    const steveVal = col[7]?.replace(/"/g, '').trim(); // Column 8
+
+                    if (!label || label === "Category" || label === "") return;
+
+                    if (label.toLowerCase() === 'total') {
+                        document.getElementById('evan-points').innerText = evanVal;
+                        document.getElementById('steve-points').innerText = steveVal;
+                    } 
+                    else {
+                        breakdownList.innerHTML += `
+                            <div class="flex justify-between items-center border-b border-white/5 pb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="opacity-70">${label}</span>
+                                    ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
+                                </div>
+                                <div class="flex gap-3">
+                                    <span class="text-blue-300 font-black w-6 text-right">${evanVal}</span>
+                                    <span class="text-white/20 opacity-30">|</span>
+                                    <span class="text-emerald-300 font-black w-6 text-left">${steveVal}</span>
+                                </div>
+                            </div>`;
+                    }
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchMatchResults() {
+            try {
+                const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
+                const data = await response.text();
+                const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+                const container = document.getElementById('results-list');
+                const standingsEl = document.getElementById('standings');
+                container.innerHTML = '';
+                let evWins = 0, stWins = 0;
+
+                rows.slice(1).reverse().forEach(col => {
+                    if (col.length < 7) return;
+                    const date = col[1]?.replace(/"/g, '').trim();
+                    const category = col[2]?.replace(/"/g, '').trim();
+                    const majorName = col[3]?.replace(/"/g, '').trim();
+                    const isMajor = majorName.length > 0;
+                    const course = col[4]?.replace(/"/g, '').trim();
+                    const evanS = parseInt(col[5]), steveS = parseInt(col[6]);
+                    const evanH = col[7]?.trim() || "0", steveH = col[8]?.trim() || "0";
+                    const winner = col[9]?.replace(/"/g, '').trim().toLowerCase();
+
+                    if (isNaN(evanS) || isNaN(steveS)) return;
+                    if (winner.includes('evan')) evWins++; else if (winner.includes('steve')) stWins++;
+                    const isEvW = winner.includes('evan'), isStW = winner.includes('steve');
+
+                    container.innerHTML += `
+                        <div class="flex flex-col">
+                            ${isMajor ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic">🏆 ${majorName}</span></div>` : ''}
+                            <div class="score-card px-3 py-2 flex flex-col ${isEvW ? 'evan-win' : (isStW ? 'steve-win' : '')} ${isMajor ? 'major-card' : ''}">
+                                <div class="flex justify-between items-center mb-1 border-b border-slate-50 pb-1">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">${date} • ${course}</span>
+                                    <span class="text-[9px] font-bold text-slate-300 uppercase">${category}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 w-[40%] text-blue-900">
+                                        <span class="font-bold text-[10px] ${isEvW ? 'opacity-100' : 'opacity-30'}">EVAN</span>
+                                        <span class="text-xl font-black ${isEvW ? 'opacity-100' : 'opacity-20'}">${evanS} <span class="text-[9px] font-medium opacity-50">(${evanH})</span></span>
+                                    </div>
+                                    <span class="text-slate-200 italic font-bold text-[10px] w-[10%] text-center">VS</span>
+                                    <div class="flex items-center justify-end gap-2 w-[40%] text-right text-emerald-900">
+                                        <span class="text-xl font-black ${isStW ? 'opacity-100' : 'opacity-20'}"><span class="text-[9px] font-medium opacity-50">(${steveH})</span> ${steveS}</span>
+                                        <span class="font-bold text-[10px] ${isStW ? 'opacity-100' : 'opacity-30'}">STEVE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                standingsEl.innerHTML = `
+                    <span class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30">Evan: ${evWins} Wins</span>
+                    <span class="bg-emerald-600/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30">Steve: ${stWins} Wins</span>
+                `;
+            } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
+        }
+
+        fetchOverallDetails();
+        fetchMatchResults();
+    </script>
+</body>
+</html>
