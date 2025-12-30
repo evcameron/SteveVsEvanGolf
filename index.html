@@ -43,8 +43,8 @@
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
                         <span id="evan-points" class="text-2xl font-black text-blue-300">--</span>
                         <div class="mt-1 leading-tight">
-                            <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- TOTAL W</span>
-                            <span id="evan-18-wins" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- 18-HOLE W</span>
+                            <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- Wins</span>
+                            <span id="evan-18-wins" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- Wins (Full Rnd)</span>
                         </div>
                     </div>
                     <div class="h-12 w-[1px] bg-white/20"></div>
@@ -52,8 +52,8 @@
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Steve</span>
                         <span id="steve-points" class="text-2xl font-black text-emerald-300">--</span>
                         <div class="mt-1 leading-tight">
-                            <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- TOTAL W</span>
-                            <span id="steve-18-wins" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- 18-HOLE W</span>
+                            <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- Wins</span>
+                            <span id="steve-18-wins" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- Wins (Full Rnd)</span>
                         </div>
                     </div>
                 </div>
@@ -70,10 +70,10 @@
                     <div class="pt-4 mb-2 flex text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
                         <span class="flex-grow">CATEGORY</span>
                         <div class="flex w-52 text-center">
-                            <span class="w-12">EV PTS</span>
-                            <span class="w-12 border-r border-white/10">ST PTS</span>
-                            <span class="w-12 ml-1">EV W</span>
-                            <span class="w-12">ST W</span>
+                            <span class="w-12">Evan Pts</span>
+                            <span class="w-12 border-r border-white/10">Steve Pts</span>
+                            <span class="w-12 ml-1">Evan Wins</span>
+                            <span class="w-12">Steve Wins</span>
                         </div>
                     </div>
                     <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
@@ -208,10 +208,10 @@
                         </div>`;
                 });
                 
-                document.getElementById('evan-wins-stat').innerText = `${evTotalWins} TOTAL W`;
-                document.getElementById('steve-wins-stat').innerText = `${stTotalWins} TOTAL W`;
-                document.getElementById('evan-18-wins').innerText = `${ev18Wins} 18-HOLE W`;
-                document.getElementById('steve-18-wins').innerText = `${st18Wins} 18-HOLE W`;
+                document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
+                document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
+                document.getElementById('evan-18-wins').innerText = `${ev18Wins} Wins (Full Rnd)`;
+                document.getElementById('steve-18-wins').innerText = `${st18Wins} Wins (Full Rnd)`;
             } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
         }
 
