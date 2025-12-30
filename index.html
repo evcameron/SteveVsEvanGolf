@@ -34,9 +34,14 @@
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
         .points-divider { border-bottom: 2px solid rgba(255, 255, 255, 0.15); margin: 12px 0; }
 
-        /* New styles for interactivity */
-        .category-row { cursor: pointer; transition: background 0.2s; }
-        .category-row:hover { background: rgba(255,255,255,0.05); }
+        .category-row { cursor: pointer; transition: all 0.2s; border-radius: 4px; margin: 0 -4px; padding: 2px 4px; }
+        .category-row:hover { background: rgba(255,255,255,0.08); }
+        
+        .category-row.active-filter { 
+            background: rgba(59, 130, 246, 0.2); 
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -107,12 +112,12 @@
     </header>
 
     <main class="max-w-md mx-auto p-3">
-        <div id="filter-status" class="hidden mb-3 flex items-center justify-between bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+        <div id="filter-status" class="hidden mb-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
             <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                Showing: <span id="active-filter-name" class="underline">None</span>
+                Filtered: <span id="active-filter-name">None</span>
             </span>
-            <button onclick="resetFilter()" class="text-[10px] font-black text-white bg-blue-600 px-2 py-1 rounded hover:bg-blue-700 uppercase">
-                Reset
+            <button onclick="resetFilter()" class="text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">
+                Clear Filter
             </button>
         </div>
 
@@ -122,16 +127,11 @@
     </main>
 
     <script>
-        // --- CONFIGURATION ---
-        const CONFIG = {
-            WebsiteYear: "2026" 
-        };
-        // ---------------------
-
+        const CONFIG = { WebsiteYear: "2026" };
         const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
         const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
 
-        let allMatches = []; // Store matches to filter without re-fetching
+        let allMatches = []; 
         let activeFilter = null;
 
         document.getElementById('display-year').innerText = `${CONFIG.WebsiteYear} SEASON`;
@@ -160,9 +160,7 @@
                 rows.forEach(col => {
                     const rowYear = col[5]?.replace(/"/g, '').trim(); 
                     const label = col[3]?.replace(/"/g, '').trim(); 
-                    
-                    if (!label || label === "Category" || label === "") return;
-                    if (rowYear !== CONFIG.WebsiteYear) return;
+                    if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
 
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
                     const weight = col[4]?.replace(/"/g, '').trim(); 
@@ -182,7 +180,9 @@
                         const stWinDisp = isMajor ? '' : `${stWins}w`;
 
                         list.innerHTML += `
-                            <div onclick="applyFilter('${label}')" class="category-row flex items-center border-b border-white/5 pb-1">
+                            <div onclick="applyFilter('${label}', this)" 
+                                 data-category="${label}"
+                                 class="category-row flex items-center border-b border-white/5 pb-1">
                                 <div class="flex-grow flex items-center gap-1 truncate pr-1">
                                     <span class="opacity-70 truncate">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
@@ -205,38 +205,32 @@
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-                
-                // Parse all matches once
                 allMatches = rows.slice(1).reverse().filter(col => {
                     if (col.length < 10) return false;
-                    const rowYear = col[0]?.replace(/"/g, '').trim();
-                    return rowYear === CONFIG.WebsiteYear;
+                    return col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear;
                 });
-
                 renderMatches();
                 updateStats();
-
-            } catch (e) { 
-                document.getElementById('results-list').innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; 
-            }
+            } catch (e) { document.getElementById('results-list').innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
         }
 
         function renderMatches() {
             const container = document.getElementById('results-list');
             container.innerHTML = '';
             
-            const filtered = activeFilter 
-                ? allMatches.filter(col => col[2]?.trim() === activeFilter)
-                : allMatches;
+            // UPDATED FILTER LOGIC: Matches if EITHER Category (col[2]) OR Major (col[3]) equals the filter
+            const filtered = activeFilter ? allMatches.filter(col => {
+                const rowCat = col[2]?.trim();
+                const rowMajor = col[3]?.trim();
+                return rowCat === activeFilter || rowMajor === activeFilter;
+            }) : allMatches;
 
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim();
                 const cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                 const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
                 const winnerText = col[9]?.trim().toLowerCase();
-
-                const isEvW = winnerText.includes('evan');
-                const isStW = winnerText.includes('steve');
+                const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
 
                 let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : (cat.includes('9') ? 'border-9hole' : 'border-other'));
                 let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
@@ -268,42 +262,34 @@
 
         function updateStats() {
             let evTotalWins = 0, stTotalWins = 0, ev18Wins = 0, st18Wins = 0;
-
             allMatches.forEach(col => {
-                const winnerText = col[9]?.trim().toLowerCase();
-                const cat = col[2]?.trim();
-                const isEvW = winnerText.includes('evan');
-                const isStW = winnerText.includes('steve');
-
-                if (isEvW) evTotalWins++;
-                if (isStW) stTotalWins++;
-                
-                const lowerCat = cat.toLowerCase();
-                if (lowerCat.includes("18 hole") && !lowerCat.includes("dentonia")) {
-                    if (isEvW) ev18Wins++;
-                    if (isStW) st18Wins++;
+                const winnerText = col[9]?.trim().toLowerCase(), cat = col[2]?.trim();
+                const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
+                if (isEvW) evTotalWins++; if (isStW) stTotalWins++;
+                if (cat.toLowerCase().includes("18 hole") && !cat.toLowerCase().includes("dentonia")) {
+                    if (isEvW) ev18Wins++; if (isStW) st18Wins++;
                 }
             });
-
             document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
             document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
             document.getElementById('evan-18-wins').innerText = `${ev18Wins} Wins (ex DP)`;
             document.getElementById('steve-18-wins').innerText = `${st18Wins} Wins (ex DP)`;
         }
 
-        function applyFilter(categoryName) {
+        function applyFilter(categoryName, element) {
+            document.querySelectorAll('.category-row').forEach(row => row.classList.remove('active-filter'));
             activeFilter = categoryName;
+            element.classList.add('active-filter');
             document.getElementById('active-filter-name').innerText = categoryName;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
-            // Scroll to the list so the user sees the filter applied
             document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // Optional: collapse breakdown after selection
-            toggleBreakdown();
+            setTimeout(toggleBreakdown, 400);
         }
 
         function resetFilter() {
             activeFilter = null;
+            document.querySelectorAll('.category-row').forEach(row => row.classList.remove('active-filter'));
             document.getElementById('filter-status').classList.add('hidden');
             renderMatches();
         }
