@@ -27,7 +27,6 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
-        
         .win-text { font-size: 7px; font-weight: 800; opacity: 0.6; margin-left: 2px; }
         .evan-win-color { color: #93c5fd; }
         .steve-win-color { color: #6ee7b7; }
@@ -56,20 +55,17 @@
                 </div>
             </div>
 
-            <div class="header-card rounded-lg p-3">
-                <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none mb-1">
-                    <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 text-left">Points Breakdown</p>
+            <div class="header-card rounded-lg p-3 text-left">
+                <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none">
+                    <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">Points Breakdown</p>
                     <svg id="chevron-icon" class="chevron w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                     </svg>
                 </button>
                 <div id="breakdown-container" class="expanded">
-                    <div class="pt-2 mb-2 flex items-center text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
-                        <span class="flex-grow text-left">CATEGORY / WEIGHT</span>
-                        <div class="flex w-52 justify-between">
-                            <span class="w-24 text-left">EVAN</span>
-                            <span class="w-24 text-right">STEVE</span>
-                        </div>
+                    <div class="pt-4 mb-2 flex justify-between text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
+                        <span>CATEGORY / WEIGHT</span>
+                        <span class="w-40 text-center">EVAN pts/wins — STEVE pts/wins</span>
                     </div>
                     <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
                 </div>
@@ -79,7 +75,7 @@
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
-            <p class="text-center py-10 text-slate-400 italic font-medium">Syncing scores...</p>
+            <p class="text-center py-10 text-slate-400 italic">Syncing scores...</p>
         </div>
     </main>
 
@@ -123,19 +119,20 @@
                     } 
                     else {
                         list.innerHTML += `
-                            <div class="flex items-center border-b border-white/5 pb-1">
-                                <div class="flex-grow flex items-center gap-1 truncate pr-1">
-                                    <span class="opacity-70 truncate text-[9px]">${label}</span>
+                            <div class="flex justify-between items-center border-b border-white/5 pb-1">
+                                <div class="flex items-center gap-2 truncate pr-1">
+                                    <span class="opacity-70 truncate">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
-                                <div class="flex w-52 justify-between items-center">
-                                    <div class="w-24 text-left flex items-center">
+                                <div class="w-40 flex justify-end items-center gap-2 flex-shrink-0">
+                                    <div class="flex items-center">
                                         <span class="text-blue-300 font-black">${evPts}</span>
                                         <span class="win-text evan-win-color">${evWins}w</span>
                                     </div>
-                                    <div class="w-24 text-right flex items-center justify-end">
+                                    <span class="text-white/10 mx-1">|</span>
+                                    <div class="flex items-center">
+                                        <span class="text-emerald-300 font-black">${stPts}</span>
                                         <span class="win-text steve-win-color">${stWins}w</span>
-                                        <span class="text-emerald-300 font-black ml-1">${stPts}</span>
                                     </div>
                                 </div>
                             </div>`;
