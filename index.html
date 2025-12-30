@@ -146,7 +146,7 @@
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     
                     if (!label || label === "Category" || label === "") return;
-                    if (rowYear !== CONFIG.WebsiteYear) return; // Year Filter
+                    if (rowYear !== CONFIG.WebsiteYear) return;
 
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
                     const weight = col[4]?.replace(/"/g, '').trim(); 
@@ -197,12 +197,11 @@
                 rows.slice(1).reverse().forEach(col => {
                     if (col.length < 10) return;
                     
-                    const dateStr = col[1]?.trim();
-                    if (!dateStr) return;
-                    
-                    // Filter matches by extracting year from date string (Expected format DD-MM-YYYY or similar)
-                    if (!dateStr.includes(CONFIG.WebsiteYear)) return;
+                    // NEW: Filter matches by checking the "Year" column (Column 1, index 0)
+                    const rowYear = col[0]?.replace(/"/g, '').trim();
+                    if (rowYear !== CONFIG.WebsiteYear) return;
 
+                    const dateStr = col[1]?.trim();
                     const cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                     const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
                     const winnerText = col[9]?.trim().toLowerCase();
