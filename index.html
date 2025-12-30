@@ -43,8 +43,8 @@
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
                         <span id="evan-points" class="text-2xl font-black text-blue-300">--</span>
                         <div class="mt-1 leading-tight">
-                            <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- Total W</span>
-                            <span id="evan-18-wins" class="block text-[8px] font-bold uppercase text-white/40 tracking-tight">-- 18-Hole W</span>
+                            <span id="evan-wins-stat" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- TOTAL W</span>
+                            <span id="evan-18-wins" class="block text-[9px] font-bold uppercase text-blue-300/60 tracking-wider">-- 18-HOLE W</span>
                         </div>
                     </div>
                     <div class="h-12 w-[1px] bg-white/20"></div>
@@ -52,8 +52,8 @@
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Steve</span>
                         <span id="steve-points" class="text-2xl font-black text-emerald-300">--</span>
                         <div class="mt-1 leading-tight">
-                            <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- Total W</span>
-                            <span id="steve-18-wins" class="block text-[8px] font-bold uppercase text-white/40 tracking-tight">-- 18-Hole W</span>
+                            <span id="steve-wins-stat" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- TOTAL W</span>
+                            <span id="steve-18-wins" class="block text-[9px] font-bold uppercase text-emerald-300/60 tracking-wider">-- 18-HOLE W</span>
                         </div>
                     </div>
                 </div>
@@ -164,19 +164,16 @@
                 let ev18Wins = 0, st18Wins = 0;
 
                 rows.slice(1).reverse().forEach(col => {
-                    if (col.length < 10) return; // Ensure winner column exists
+                    if (col.length < 10) return;
                     const date = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                     const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0";
                     const winnerText = col[9]?.trim().toLowerCase();
 
-                    // SKIP: If the row is empty or has no score data
                     if (!evS || !stS) return;
 
-                    // IDENTIFY WINNER: Strict reliance on the "Winner" column
                     const isEvW = winnerText.includes('evan');
                     const isStW = winnerText.includes('steve');
 
-                    // Update Global Stats
                     if (isEvW) evTotalWins++;
                     if (isStW) stTotalWins++;
                     
@@ -185,7 +182,6 @@
                         if (isStW) st18Wins++;
                     }
 
-                    // Card Classes
                     let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.toLowerCase().includes('18') ? 'border-18hole' : (cat.toLowerCase().includes('9') ? 'border-9hole' : 'border-other'));
                     let bgClass = isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw');
 
@@ -212,10 +208,10 @@
                         </div>`;
                 });
                 
-                document.getElementById('evan-wins-stat').innerText = `${evTotalWins} Wins`;
-                document.getElementById('steve-wins-stat').innerText = `${stTotalWins} Wins`;
-                document.getElementById('evan-18-wins').innerText = `${ev18Wins} 18-Hole W`;
-                document.getElementById('steve-18-wins').innerText = `${st18Wins} 18-Hole W`;
+                document.getElementById('evan-wins-stat').innerText = `${evTotalWins} TOTAL W`;
+                document.getElementById('steve-wins-stat').innerText = `${stTotalWins} TOTAL W`;
+                document.getElementById('evan-18-wins').innerText = `${ev18Wins} 18-HOLE W`;
+                document.getElementById('steve-18-wins').innerText = `${st18Wins} 18-HOLE W`;
             } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
         }
 
