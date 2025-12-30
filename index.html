@@ -6,21 +6,18 @@
     <title>Whistle Post Cup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Base Card Styles */
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
         .evan-win { border-left: 4px solid #3b82f6; }
         .steve-win { border-left: 4px solid #10b981; }
         .major-card { border: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
         
-        /* Header Glassmorphism */
         .header-card { 
             background: rgba(255, 255, 255, 0.1); 
             border: 1px solid rgba(255, 255, 255, 0.2); 
             backdrop-filter: blur(4px);
         }
 
-        /* Animation for Collapsible Section */
         #breakdown-container {
             transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out;
             overflow: hidden;
@@ -28,12 +25,10 @@
         .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
         .expanded { max-height: 600px; opacity: 1; }
         
-        /* Rotation for the toggle arrow */
         .chevron { transition: transform 0.3s ease; }
         .rotate-180 { transform: rotate(180deg); }
 
-        /* Weighting Badge Style */
-        .weight-badge { background: rgba(255, 255, 255, 0.15); padding: 1px 4px; border-radius: 4px; color: rgba(255,255,255,0.5); font-size: 8px; }
+        .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -44,7 +39,7 @@
         <div class="flex flex-col gap-2 max-w-sm mx-auto mb-4">
             
             <div class="header-card rounded-lg p-3">
-                <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 mb-2">Overall Cup Totals</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70 mb-2 text-center">Overall Cup Totals</p>
                 <div class="flex justify-around items-center">
                     <div class="text-center">
                         <span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Evan</span>
@@ -67,9 +62,9 @@
                 </button>
 
                 <div id="breakdown-container" class="expanded">
-                    <div class="pt-3 mb-1 flex justify-between text-[7px] uppercase tracking-tighter opacity-40 font-bold border-b border-white/10 pb-1">
-                        <span>Category / Weight</span>
-                        <span>Evan / Steve</span>
+                    <div class="pt-4 mb-1 flex justify-between text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
+                        <span class="pl-0">CATEGORY / WEIGHT</span>
+                        <span class="w-24 text-center">EVAN / STEVE</span>
                     </div>
                     <div id="breakdown-list" class="space-y-1.5 text-[10px] font-bold uppercase">
                         </div>
@@ -82,7 +77,7 @@
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
-            <p class="text-center py-10 text-slate-400 italic">Syncing scores...</p>
+            <p class="text-center py-10 text-slate-400 italic font-medium">Syncing scores...</p>
         </div>
     </main>
 
@@ -93,7 +88,6 @@
         function toggleBreakdown() {
             const container = document.getElementById('breakdown-container');
             const icon = document.getElementById('chevron-icon');
-            
             if (container.classList.contains('expanded')) {
                 container.classList.replace('expanded', 'collapsed');
                 icon.classList.add('rotate-180');
@@ -107,16 +101,15 @@
             try {
                 const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
-                // We use a simple comma split here; if labels have commas, we may need the complex regex
                 const rows = data.split(/\r?\n/).map(row => row.split(','));
                 const breakdownList = document.getElementById('breakdown-list');
                 breakdownList.innerHTML = '';
 
                 rows.forEach(col => {
-                    const label = col[3]?.replace(/"/g, '').trim(); // Column 4
-                    const weight = col[4]?.replace(/"/g, '').trim(); // Column 5 (New Weighting)
-                    const evanVal = col[6]?.replace(/"/g, '').trim(); // Column 7
-                    const steveVal = col[7]?.replace(/"/g, '').trim(); // Column 8
+                    const label = col[3]?.replace(/"/g, '').trim(); 
+                    const weight = col[4]?.replace(/"/g, '').trim(); 
+                    const evanVal = col[6]?.replace(/"/g, '').trim(); 
+                    const steveVal = col[7]?.replace(/"/g, '').trim(); 
 
                     if (!label || label === "Category" || label === "") return;
 
@@ -125,16 +118,17 @@
                         document.getElementById('steve-points').innerText = steveVal;
                     } 
                     else {
+                        // Score container on the right set to w-24 to match header span
                         breakdownList.innerHTML += `
                             <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="opacity-70">${label}</span>
+                                <div class="flex items-center gap-2 truncate pr-2">
+                                    <span class="opacity-70 truncate">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
-                                <div class="flex gap-3">
-                                    <span class="text-blue-300 font-black w-6 text-right">${evanVal}</span>
-                                    <span class="text-white/20 opacity-30">|</span>
-                                    <span class="text-emerald-300 font-black w-6 text-left">${steveVal}</span>
+                                <div class="w-24 flex justify-center items-center gap-2 flex-shrink-0">
+                                    <span class="text-blue-300 font-black w-8 text-right">${evanVal}</span>
+                                    <span class="text-white/10">|</span>
+                                    <span class="text-emerald-300 font-black w-8 text-left">${steveVal}</span>
                                 </div>
                             </div>`;
                     }
@@ -154,44 +148,41 @@
 
                 rows.slice(1).reverse().forEach(col => {
                     if (col.length < 7) return;
-                    const date = col[1]?.replace(/"/g, '').trim();
-                    const category = col[2]?.replace(/"/g, '').trim();
-                    const majorName = col[3]?.replace(/"/g, '').trim();
-                    const isMajor = majorName.length > 0;
-                    const course = col[4]?.replace(/"/g, '').trim();
+                    const date = col[1]?.replace(/"/g, '').trim(), cat = col[2]?.replace(/"/g, '').trim();
+                    const maj = col[3]?.replace(/"/g, '').trim(), course = col[4]?.replace(/"/g, '').trim();
                     const evanS = parseInt(col[5]), steveS = parseInt(col[6]);
                     const evanH = col[7]?.trim() || "0", steveH = col[8]?.trim() || "0";
-                    const winner = col[9]?.replace(/"/g, '').trim().toLowerCase();
+                    const win = col[9]?.replace(/"/g, '').trim().toLowerCase();
 
                     if (isNaN(evanS) || isNaN(steveS)) return;
-                    if (winner.includes('evan')) evWins++; else if (winner.includes('steve')) stWins++;
-                    const isEvW = winner.includes('evan'), isStW = winner.includes('steve');
+                    if (win.includes('evan')) evWins++; else if (win.includes('steve')) stWins++;
+                    const isEvW = win.includes('evan'), isStW = win.includes('steve');
 
                     container.innerHTML += `
                         <div class="flex flex-col">
-                            ${isMajor ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic">🏆 ${majorName}</span></div>` : ''}
-                            <div class="score-card px-3 py-2 flex flex-col ${isEvW ? 'evan-win' : (isStW ? 'steve-win' : '')} ${isMajor ? 'major-card' : ''}">
-                                <div class="flex justify-between items-center mb-1 border-b border-slate-50 pb-1">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">${date} • ${course}</span>
-                                    <span class="text-[9px] font-bold text-slate-300 uppercase">${category}</span>
+                            ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif shadow-sm">🏆 ${maj}</span></div>` : ''}
+                            <div class="score-card px-3 py-2 flex flex-col ${isEvW ? 'evan-win' : (isStW ? 'steve-win' : '')} ${maj ? 'major-card' : ''}">
+                                <div class="flex justify-between items-center mb-1 border-b border-slate-50 pb-1 text-slate-400">
+                                    <span class="text-[9px] font-bold uppercase tracking-tight">${date} • ${course}</span>
+                                    <span class="text-[9px] font-bold uppercase">${cat}</span>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2 w-[40%] text-blue-900">
-                                        <span class="font-bold text-[10px] ${isEvW ? 'opacity-100' : 'opacity-30'}">EVAN</span>
-                                        <span class="text-xl font-black ${isEvW ? 'opacity-100' : 'opacity-20'}">${evanS} <span class="text-[9px] font-medium opacity-50">(${evanH})</span></span>
+                                    <div class="flex items-center gap-2 w-[42%]">
+                                        <span class="font-bold text-[10px] ${isEvW ? 'text-blue-700' : 'text-slate-300'}">EVAN</span>
+                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evanS} <span class="text-[9px] font-medium opacity-40">(${evanH})</span></span>
                                     </div>
-                                    <span class="text-slate-200 italic font-bold text-[10px] w-[10%] text-center">VS</span>
-                                    <div class="flex items-center justify-end gap-2 w-[40%] text-right text-emerald-900">
-                                        <span class="text-xl font-black ${isStW ? 'opacity-100' : 'opacity-20'}"><span class="text-[9px] font-medium opacity-50">(${steveH})</span> ${steveS}</span>
-                                        <span class="font-bold text-[10px] ${isStW ? 'opacity-100' : 'opacity-30'}">STEVE</span>
+                                    <span class="text-slate-100 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
+                                    <div class="flex items-center justify-end gap-2 w-[42%] text-right">
+                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-medium opacity-40">(${steveH})</span> ${steveS}</span>
+                                        <span class="font-bold text-[10px] ${isStW ? 'text-emerald-700' : 'text-slate-300'}">STEVE</span>
                                     </div>
                                 </div>
                             </div>
                         </div>`;
                 });
                 standingsEl.innerHTML = `
-                    <span class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30">Evan: ${evWins} Wins</span>
-                    <span class="bg-emerald-600/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30">Steve: ${stWins} Wins</span>
+                    <div class="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30 text-[10px]">Evan: ${evWins} Wins</div>
+                    <div class="bg-emerald-600/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30 text-[10px]">Steve: ${stWins} Wins</div>
                 `;
             } catch (e) { container.innerHTML = `<p class="text-center text-red-500">Error loading scores.</p>`; }
         }
