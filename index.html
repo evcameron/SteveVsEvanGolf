@@ -19,9 +19,6 @@
         .major-card { border-top: 2px solid #fbbf24; border-right: 2px solid #fbbf24; border-bottom: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
         
-        /* New styling for Major Rows in Breakdown */
-        .major-row-bg { background: rgba(251, 191, 36, 0.1); border-right: 2px solid rgba(251, 191, 36, 0.3); margin-left: -4px; padding-left: 4px; border-radius: 2px; }
-        
         .header-card { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
         #breakdown-container { transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out; overflow: hidden; }
         .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
@@ -127,16 +124,11 @@
                         const isMajor = type.includes('major');
                         const evWinDisp = isMajor ? '' : `${evWins}w`;
                         const stWinDisp = isMajor ? '' : `${stWins}w`;
-                        
-                        // major-specific styling logic
-                        const rowClass = isMajor ? 'major-row-bg' : '';
-                        const labelStyle = isMajor ? 'font-serif italic text-amber-200' : 'opacity-70';
-                        const trophy = isMajor ? '<span class="mr-1">🏆</span>' : '';
 
                         list.innerHTML += `
-                            <div class="flex items-center border-b border-white/5 pb-1 ${rowClass}">
+                            <div class="flex items-center border-b border-white/5 pb-1">
                                 <div class="flex-grow flex items-center gap-1 truncate pr-1">
-                                    <span class="${labelStyle} truncate">${trophy}${label}</span>
+                                    <span class="opacity-70 truncate">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
