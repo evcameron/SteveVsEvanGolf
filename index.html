@@ -180,7 +180,7 @@
                         const stWinDisp = isMajor ? '' : `${stWins}w`;
 
                         list.innerHTML += `
-                            <div onclick="applyFilter('${label}', this)" 
+                            <div onclick="applyFilter('${label}', this, event)" 
                                  data-category="${label}"
                                  class="category-row flex items-center border-b border-white/5 pb-1">
                                 <div class="flex-grow flex items-center gap-1 truncate pr-1">
@@ -191,7 +191,7 @@
                                     <span class="w-12 text-blue-300 font-black">${evPts}</span>
                                     <span class="w-12 text-emerald-300 font-black border-r border-white/10">${stPts}</span>
                                     <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${evWinDisp}</span>
-                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWinDisp}</span>
+                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWins}w</span>
                                 </div>
                             </div>`;
                         if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
@@ -217,12 +217,7 @@
         function renderMatches() {
             const container = document.getElementById('results-list');
             container.innerHTML = '';
-            
-            const filtered = activeFilter ? allMatches.filter(col => {
-                const rowCat = col[2]?.trim();
-                const rowMajor = col[3]?.trim();
-                return rowCat === activeFilter || rowMajor === activeFilter;
-            }) : allMatches;
+            const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[3]?.trim() === activeFilter) : allMatches;
 
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim();
@@ -275,15 +270,29 @@
             document.getElementById('steve-18-wins').innerText = `${st18Wins} Wins (ex DP)`;
         }
 
-        function applyFilter(categoryName, element) {
+        function applyFilter(categoryName, element, event) {
+            // Stop event from bubbling up to parents
+            if (event) event.stopPropagation();
+
+            // Handle highlighting
             document.querySelectorAll('.category-row').forEach(row => row.classList.remove('active-filter'));
-            activeFilter = categoryName;
             element.classList.add('active-filter');
+            
+            // Apply filter logic
+            activeFilter = categoryName;
             document.getElementById('active-filter-name').innerText = categoryName;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
+
+            // FORCE BREAKDOWN TO STAY OPEN
+            const container = document.getElementById('breakdown-container');
+            const icon = document.getElementById('chevron-icon');
+            container.classList.remove('collapsed');
+            container.classList.add('expanded');
+            icon.classList.remove('rotate-180');
+
+            // Scroll to list
             document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // Collapse logic removed per request
         }
 
         function resetFilter() {
