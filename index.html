@@ -9,11 +9,11 @@
         /* Base Card Styling */
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left-width: 5px; }
         
-        /* WINNER GRADIENTS */
-        /* Evan: Glow on the LEFT (Blue to White) */
-        .bg-evan-win  { background: linear-gradient(to right, #eff6ff, #ffffff); } 
-        /* Steve: Glow on the RIGHT (White to Emerald) */
-        .bg-steve-win { background: linear-gradient(to right, #ffffff, #ecfdf5); } 
+        /* UPDATED VIBRANT GRADIENTS */
+        /* Evan: More saturated Blue to White */
+        .bg-evan-win  { background: linear-gradient(to right, #dbeafe, #ffffff); } 
+        /* Steve: More saturated White to Emerald */
+        .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
         .bg-draw      { background: #ffffff; }
 
         /* CATEGORY BORDER COLORS */
@@ -153,19 +153,19 @@
                         <div class="flex flex-col">
                             ${maj ? `<div class="flex"><span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider ml-1 italic font-serif">🏆 ${maj}</span></div>` : ''}
                             <div class="score-card px-3 py-2 flex flex-col ${catClass} ${bgClass} ${maj ? 'major-card' : ''}">
-                                <div class="flex justify-between items-center mb-1 border-b border-slate-100 pb-1 text-slate-400">
+                                <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                     <span class="text-[9px] font-bold uppercase tracking-tight">${date} • ${course}</span>
                                     <span class="text-[9px] font-bold uppercase">${cat}</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2 w-[42%]">
-                                        <span class="font-bold text-[10px] ${isEvW ? 'text-blue-700' : 'text-slate-300'}">EVAN</span>
-                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evanS} <span class="text-[9px] font-medium opacity-40">(${evanH})</span></span>
+                                        <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span>
+                                        <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evanS} <span class="text-[9px] font-bold opacity-40">(${evanH})</span></span>
                                     </div>
-                                    <span class="text-slate-200 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
+                                    <span class="text-slate-300 italic font-bold text-[10px] w-[8%] text-center tracking-tighter">VS</span>
                                     <div class="flex items-center justify-end gap-2 w-[42%] text-right">
-                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-medium opacity-40">(${steveH})</span> ${steveS}</span>
-                                        <span class="font-bold text-[10px] ${isStW ? 'text-emerald-700' : 'text-slate-300'}">STEVE</span>
+                                        <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-40">(${steveH})</span> ${steveS}</span>
+                                        <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span>
                                     </div>
                                 </div>
                             </div>
