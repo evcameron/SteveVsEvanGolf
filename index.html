@@ -6,10 +6,14 @@
     <title>Whistle Post Cup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom Score Card Styles */
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
-        .evan-win { border-left: 4px solid #3b82f6; }
-        .steve-win { border-left: 4px solid #10b981; }
-        /* Gold border and shadow for Majors */
+        
+        /* Win Indicators: Colored borders on the left based on who won */
+        .evan-win { border-left: 4px solid #3b82f6; }   /* Blue for Evan */
+        .steve-win { border-left: 4px solid #10b981; }  /* Green for Steve */
+        
+        /* Major Highlight Styles */
         .major-card { border: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
     </style>
@@ -18,22 +22,33 @@
 
     <header class="bg-green-800 text-white p-4 text-center shadow-lg sticky top-0 z-10">
         <h1 class="text-xl font-black uppercase italic tracking-tighter">Whistle Post Cup</h1>
-        <div id="standings" class="mt-2 flex justify-center gap-3 text-[10px] font-bold uppercase tracking-widest opacity-90"></div>
+        <div id="standings" class="mt-2 flex justify-center gap-3 text-[10px] font-bold uppercase tracking-widest opacity-90 text-white">
+            </div>
     </header>
 
     <main class="max-w-md mx-auto p-3">
         <div id="results-list" class="space-y-3">
-            <p class="text-center py-10 text-slate-400">Syncing scores...</p>
+            <p class="text-center py-10 text-slate-400 font-medium italic">Syncing scores from Google Sheets...</p>
         </div>
     </main>
 
     <script>
+        /**
+         * The URL points to your Google Sheet published as a CSV.
+         * The "cachebuster" forces the browser to fetch the latest data instead of a saved copy.
+         */
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&cachebuster=' + new Date().getTime();
 
         async function fetchResults() {
             try {
                 const response = await fetch(CSV_URL);
                 const data = await response.text();
+                
+                /**
+                 * CSV PARSING LOGIC
+                 * 1. Split text into rows (by newline).
+                 * 2. Split rows into columns (by comma), ignoring commas inside quotes.
+                 */
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
                 
                 const container = document.getElementById('results-list');
@@ -43,32 +58,41 @@
                 let evanWins = 0;
                 let steveWins = 0;
 
+                /**
+                 * DATA MAPPING
+                 * We slice(1) to skip the header row, then .reverse() to show the newest rounds first.
+                 */
                 const matchData = rows.slice(1).reverse();
 
                 matchData.forEach(col => {
+                    // Safety check: ensure the row has enough data
                     if (col.length < 7) return;
 
-                    const date = col[1]?.replace(/"/g, '').trim();
-                    const category = col[2]?.replace(/"/g, '').trim();
-                    const majorName = col[3]?.replace(/"/g, '').trim(); // Get the name of the Major
-                    const isMajor = majorName.length > 0;
-                    const course = col[4]?.replace(/"/g, '').trim();
-                    const evanS = parseInt(col[5]);
-                    const steveS = parseInt(col[6]);
-                    const evanH = col[7]?.trim() || "0";
-                    const steveH = col[8]?.trim() || "0";
-                    const winner = col[9]?.replace(/"/g, '').trim().toLowerCase();
+                    // Mapping Google Sheet Columns to Variables
+                    const date      = col[1]?.replace(/"/g, '').trim(); // Column B
+                    const category  = col[2]?.replace(/"/g, '').trim(); // Column C
+                    const majorName = col[3]?.replace(/"/g, '').trim(); // Column D
+                    const isMajor   = majorName.length > 0;             // True if anything is in Major col
+                    const course    = col[4]?.replace(/"/g, '').trim(); // Column E
+                    const evanS     = parseInt(col[5]);                 // Column F
+                    const steveS    = parseInt(col[6]);                 // Column G
+                    const evanH     = col[7]?.trim() || "0";            // Column H
+                    const steveH    = col[8]?.trim() || "0";            // Column I
+                    const winner    = col[9]?.replace(/"/g, '').trim().toLowerCase(); // Column J
 
+                    // Skip the row if scores are not valid numbers
                     if (isNaN(evanS) || isNaN(steveS)) return;
 
+                    // Update series standings based on the Winner column
                     if (winner.includes('evan')) evanWins++;
                     else if (winner.includes('steve')) steveWins++;
 
+                    // Determine Winner Styling
                     const isEvanWinner = winner.includes('evan');
                     const isSteveWinner = winner.includes('steve');
                     const winCardClass = isEvanWinner ? 'evan-win' : (isSteveWinner ? 'steve-win' : '');
 
-                    // Construct the HTML for the Major Header if it exists
+                    // Major Badge: Only created if isMajor is true
                     const majorHeaderHtml = isMajor ? 
                         `<div class="flex">
                             <span class="major-header text-[9px] font-black px-2 py-0.5 rounded-t-md uppercase tracking-wider shadow-sm ml-1">
@@ -76,12 +100,13 @@
                             </span>
                          </div>` : '';
 
+                    // Generate the HTML Card for this round
                     container.innerHTML += `
                         <div class="flex flex-col">
                             ${majorHeaderHtml}
                             <div class="score-card px-3 py-2 flex flex-col ${winCardClass} ${isMajor ? 'major-card' : ''}">
                                 <div class="flex justify-between items-center mb-1 border-b border-slate-50 pb-1">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase">${date} • ${course}</span>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">${date} • ${course}</span>
                                     <span class="text-[9px] font-bold text-slate-300 uppercase">${category}</span>
                                 </div>
                                 
@@ -94,7 +119,7 @@
                                         </div>
                                     </div>
 
-                                    <span class="text-slate-200 italic font-bold text-[10px] w-[10%] text-center">VS</span>
+                                    <span class="text-slate-200 italic font-bold text-[10px] w-[10%] text-center tracking-tighter">VS</span>
 
                                     <div class="flex items-center justify-end gap-3 w-[40%] text-right">
                                         <div class="flex items-baseline gap-1">
@@ -109,15 +134,19 @@
                     `;
                 });
 
+                // Update the Header Standings with total win counts
                 standingsEl.innerHTML = `
-                    <span class="bg-blue-600 px-2 py-0.5 rounded text-white shadow-sm">Evan: ${evanWins}</span>
-                    <span class="bg-emerald-600 px-2 py-0.5 rounded text-white shadow-sm">Steve: ${steveWins}</span>
+                    <span class="bg-blue-600 px-2 py-0.5 rounded shadow-sm">Evan: ${evanWins}</span>
+                    <span class="bg-emerald-600 px-2 py-0.5 rounded shadow-sm">Steve: ${steveWins}</span>
                 `;
 
             } catch (e) {
-                container.innerHTML = `<p class="text-center text-red-500">Error loading data.</p>`;
+                console.error("Fetch Error:", e);
+                container.innerHTML = `<p class="text-center text-red-500 font-bold p-10">❌ Failed to load scores. Check internet connection.</p>`;
             }
         }
+        
+        // Run the function as soon as the page loads
         fetchResults();
     </script>
 </body>
