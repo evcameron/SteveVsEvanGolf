@@ -27,9 +27,7 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .weight-badge { background: rgba(255, 255, 255, 0.1); padding: 1px 4px; border-radius: 3px; color: rgba(255,255,255,0.4); font-size: 7px; }
-        .win-text { font-size: 7px; font-weight: 800; opacity: 0.6; margin-left: 2px; text-transform: lowercase; }
-        .evan-win-color { color: #93c5fd; }
-        .steve-win-color { color: #6ee7b7; }
+        .win-label { font-size: 7px; font-weight: 800; opacity: 0.5; margin-left: 1px; text-transform: lowercase; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -63,11 +61,13 @@
                     </svg>
                 </button>
                 <div id="breakdown-container" class="collapsed">
-                    <div class="pt-4 mb-2 flex justify-between text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
-                        <span>CATEGORY / WEIGHT</span>
-                        <div class="w-48 flex justify-between px-2">
-                            <span class="w-20 text-left">EVAN</span>
-                            <span class="w-20 text-right">STEVE</span>
+                    <div class="pt-4 mb-2 flex text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
+                        <span class="flex-grow">CATEGORY</span>
+                        <div class="flex w-52 text-center">
+                            <span class="w-12">EV PTS</span>
+                            <span class="w-12 border-r border-white/10">EV W</span>
+                            <span class="w-12 ml-1">ST PTS</span>
+                            <span class="w-12">ST W</span>
                         </div>
                     </div>
                     <div id="breakdown-list" class="space-y-2 text-[10px] font-bold uppercase"></div>
@@ -122,21 +122,16 @@
                     } 
                     else {
                         list.innerHTML += `
-                            <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                                <div class="flex items-center gap-1.5 truncate pr-1">
+                            <div class="flex items-center border-b border-white/5 pb-1">
+                                <div class="flex-grow flex items-center gap-1 truncate pr-1">
                                     <span class="opacity-70 truncate">${label}</span>
                                     ${weight ? `<span class="weight-badge">${weight}</span>` : ''}
                                 </div>
-                                <div class="w-48 flex justify-between items-center px-2 flex-shrink-0">
-                                    <div class="flex items-center w-20 justify-start">
-                                        <span class="text-blue-300 font-black">${evPts}</span>
-                                        <span class="win-text evan-win-color">${evWins} wins</span>
-                                    </div>
-                                    <span class="text-white/10">|</span>
-                                    <div class="flex items-center w-20 justify-end">
-                                        <span class="text-emerald-300 font-black">${stPts}</span>
-                                        <span class="win-text steve-win-color">${stWins} wins</span>
-                                    </div>
+                                <div class="flex w-52 text-center items-center flex-shrink-0">
+                                    <span class="w-12 text-blue-300 font-black">${evPts}</span>
+                                    <span class="w-12 text-blue-300/60 text-[8px] border-r border-white/10">${evWins}w</span>
+                                    <span class="w-12 ml-1 text-emerald-300 font-black">${stPts}</span>
+                                    <span class="w-12 text-emerald-300/60 text-[8px]">${stWins}w</span>
                                 </div>
                             </div>`;
                     }
