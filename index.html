@@ -11,10 +11,10 @@
         .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
         .bg-draw      { background: #ffffff; }
 
-        .border-dentonia { border-left-color: #f59e0b; }
+        .border-dentonia { border-left-color: #94a3b8; }
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
-        .border-other    { border-left-color: #94a3b8; }
+        .border-other    { border-left-color: #cbd5e1; }
 
         .major-card { border-top: 2px solid #fbbf24; border-right: 2px solid #fbbf24; border-bottom: 2px solid #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
@@ -58,11 +58,11 @@
             <div class="header-card rounded-lg p-3 text-left">
                 <button onclick="toggleBreakdown()" class="w-full flex justify-between items-center focus:outline-none">
                     <p class="text-[9px] uppercase tracking-[0.2em] font-bold opacity-70">Points Breakdown</p>
-                    <svg id="chevron-icon" class="chevron w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg id="chevron-icon" class="chevron rotate-180 w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                     </svg>
                 </button>
-                <div id="breakdown-container" class="expanded">
+                <div id="breakdown-container" class="collapsed">
                     <div class="pt-4 mb-2 flex justify-between text-[7px] uppercase font-black opacity-40 border-b border-white/10 pb-1">
                         <span>CATEGORY / WEIGHT</span>
                         <div class="w-48 flex justify-between px-2">
