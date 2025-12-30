@@ -33,7 +33,6 @@
         .category-row:hover { background: rgba(255,255,255,0.08); }
         .category-row.active-filter { background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.4); }
 
-        /* Year Selector Styles */
         .year-dropdown { position: relative; display: inline-block; }
         .year-menu { 
             position: absolute; right: 0; top: 110%; background: #1e293b; 
@@ -225,6 +224,7 @@
 
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
+                const evS = col[5]?.trim(), stS = col[6]?.trim(); // Strokes restored
                 const evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : 'border-9hole');
@@ -238,9 +238,15 @@
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evH}</span></div>
+                                <div class="flex items-center gap-2 w-[42%]">
+                                    <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-300'}">EVAN</span>
+                                    <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-300'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span>
+                                </div>
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
-                                <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}">${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span></div>
+                                <div class="flex items-center justify-end gap-2 w-[42%] text-right">
+                                    <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-300'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span>
+                                    <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-300'}">STEVE</span>
+                                </div>
                             </div>
                         </div>
                     </div>`;
