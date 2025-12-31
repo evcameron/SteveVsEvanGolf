@@ -7,9 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left-width: 5px; }
-        .bg-evan-win  { background: linear-gradient(to right, #dbeafe, #ffffff); } 
+        
+        /* Updated Gradients */
+        .bg-evan-win  { background: linear-gradient(to right, #bae6fd, #ffffff); } /* Stronger Blue */
         .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
-        .bg-draw      { background: #ffffff; }
+        .bg-draw      { background: radial-gradient(circle, #fef9c3 0%, #ffffff 80%); } /* Yellow to White Tie */
 
         .border-dentonia { border-left-color: #94a3b8; }
         .border-18hole   { border-left-color: #3b82f6; }
@@ -45,16 +47,11 @@
         .year-item:hover { background: rgba(255,255,255,0.1); }
         .year-item:last-child { border-bottom: none; }
 
-        /* Ryder Cup Bar Styles */
         .ryder-bar-container { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; position: relative; }
-        
-        /* SHADING LOGIC: Separate segments for light (regular) and dark (majors) */
         .evan-progress-light { height: 100%; background: #60a5fa; transition: width 1s ease-in-out; float: left; }
         .evan-progress-dark  { height: 100%; background: #1d4ed8; transition: width 1s ease-in-out; float: left; }
-        
         .steve-progress-light { height: 100%; background: #34d399; transition: width 1s ease-in-out; float: right; }
         .steve-progress-dark  { height: 100%; background: #047857; transition: width 1s ease-in-out; float: right; }
-
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
     </style>
 </head>
@@ -99,7 +96,6 @@
                         <div class="mid-line"></div>
                         <div id="evan-bar-dark" class="evan-progress-dark" style="width: 0%"></div>
                         <div id="evan-bar-light" class="evan-progress-light" style="width: 0%"></div>
-                        
                         <div id="steve-bar-dark" class="steve-progress-dark" style="width: 0%"></div>
                         <div id="steve-bar-light" class="steve-progress-light" style="width: 0%"></div>
                     </div>
@@ -228,7 +224,6 @@
                     }
                 });
 
-                // Update Ryder Bar segments (Major points = dark, Regular points = light)
                 const target = 100;
                 const evRegularPts = evTotal - evMajorPts;
                 const stRegularPts = stTotal - stMajorPts;
@@ -272,6 +267,8 @@
                 const evS = col[5]?.trim(), stS = col[6]?.trim(); 
                 const evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
+                const isDraw = !isEvW && !isStW;
+                
                 let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : 'border-9hole');
                 
                 container.innerHTML += `
