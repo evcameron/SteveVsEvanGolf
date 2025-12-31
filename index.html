@@ -167,7 +167,7 @@
     <script>
         let CONFIG = { WebsiteYear: "2026" };
         const MATCHES_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?output=csv&gid=0';
-        const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7whUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
+        const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
 
         let allMatches = []; 
         let activeFilter = null;
@@ -327,29 +327,21 @@
 
         function applyFilter(cat, el, e) {
             e.stopPropagation();
-            
             if (activeFilter === cat) {
                 resetFilter();
                 return;
             }
-
             document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
             el.classList.add('active-filter');
             activeFilter = cat;
             document.getElementById('active-filter-name').innerText = cat;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
-            
-            const container = document.getElementById('breakdown-container');
-            container.classList.remove('collapsed');
-            container.classList.add('expanded');
-            document.getElementById('chevron-icon').classList.remove('rotate-180');
             document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function resetFilter() {
             activeFilter = null;
-            // This now correctly wipes the shading from all rows
             document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
             document.getElementById('filter-status').classList.add('hidden');
             renderMatches();
