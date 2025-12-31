@@ -47,11 +47,27 @@
         .year-item:hover { background: rgba(255,255,255,0.1); }
         .year-item:last-child { border-bottom: none; }
 
+        /* Ryder Cup Bar Styles */
         .ryder-bar-container { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; position: relative; }
-        .evan-progress-light { height: 100%; background: #60a5fa; transition: width 1s ease-in-out; float: left; }
+        
+        /* Solid Dark Bars for Majors */
         .evan-progress-dark  { height: 100%; background: #1d4ed8; transition: width 1s ease-in-out; float: left; }
-        .steve-progress-light { height: 100%; background: #34d399; transition: width 1s ease-in-out; float: right; }
         .steve-progress-dark  { height: 100%; background: #047857; transition: width 1s ease-in-out; float: right; }
+
+        /* Angled Dashed Bars for Regular Tournaments */
+        .evan-progress-light { 
+            height: 100%; 
+            background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 4px, #3b82f6 4px, #3b82f6 8px);
+            transition: width 1s ease-in-out; 
+            float: left; 
+        }
+        .steve-progress-light { 
+            height: 100%; 
+            background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px);
+            transition: width 1s ease-in-out; 
+            float: right; 
+        }
+
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
     </style>
 </head>
