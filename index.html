@@ -47,8 +47,14 @@
 
         /* Ryder Cup Bar Styles */
         .ryder-bar-container { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; position: relative; }
-        .evan-progress { height: 100%; background: #3b82f6; transition: width 1s ease-in-out; float: left; }
-        .steve-progress { height: 100%; background: #10b981; transition: width 1s ease-in-out; float: right; }
+        
+        /* SHADING LOGIC: Separate segments for light (regular) and dark (majors) */
+        .evan-progress-light { height: 100%; background: #60a5fa; transition: width 1s ease-in-out; float: left; }
+        .evan-progress-dark  { height: 100%; background: #1d4ed8; transition: width 1s ease-in-out; float: left; }
+        
+        .steve-progress-light { height: 100%; background: #34d399; transition: width 1s ease-in-out; float: right; }
+        .steve-progress-dark  { height: 100%; background: #047857; transition: width 1s ease-in-out; float: right; }
+
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
     </style>
 </head>
@@ -91,8 +97,11 @@
                     
                     <div class="ryder-bar-container mb-2">
                         <div class="mid-line"></div>
-                        <div id="evan-bar" class="evan-progress" style="width: 0%"></div>
-                        <div id="steve-bar" class="steve-progress" style="width: 0%"></div>
+                        <div id="evan-bar-dark" class="evan-progress-dark" style="width: 0%"></div>
+                        <div id="evan-bar-light" class="evan-progress-light" style="width: 0%"></div>
+                        
+                        <div id="steve-bar-dark" class="steve-progress-dark" style="width: 0%"></div>
+                        <div id="steve-bar-light" class="steve-progress-light" style="width: 0%"></div>
                     </div>
 
                     <div class="flex justify-between text-[8px] font-black uppercase tracking-wider">
@@ -176,6 +185,9 @@
                 const rows = data.split(/\r?\n/).map(row => row.split(','));
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
+                
+                let evTotal = 0, stTotal = 0;
+                let evMajorPts = 0, stMajorPts = 0;
                 let tournamentCount = 0;
 
                 rows.forEach(col => {
@@ -185,27 +197,29 @@
                     if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
 
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
+                    const isMajor = type.includes('major');
                     const evPts = parseFloat(col[6]?.replace(/"/g, '').trim()) || 0;
                     const stPts = parseFloat(col[7]?.replace(/"/g, '').trim()) || 0;
                     const evWins = col[8]?.replace(/"/g, '').trim(), stWins = col[9]?.replace(/"/g, '').trim();
 
                     if (label.toLowerCase() === 'total') {
-                        document.getElementById('evan-points').innerText = evPts;
-                        document.getElementById('steve-points').innerText = stPts;
-                        
-                        // Ryder Bar Calculation (Out of 100)
-                        const total = 100;
-                        document.getElementById('evan-bar').style.width = (evPts / total * 100) + '%';
-                        document.getElementById('steve-bar').style.width = (stPts / total * 100) + '%';
+                        evTotal = evPts;
+                        stTotal = stPts;
+                        document.getElementById('evan-points').innerText = evTotal;
+                        document.getElementById('steve-points').innerText = stTotal;
                     } else {
                         tournamentCount++;
-                        const isMajor = type.includes('major');
+                        if (isMajor) {
+                            evMajorPts += evPts;
+                            stMajorPts += stPts;
+                        }
+
                         list.innerHTML += `
-                            <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1">
+                            <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1 ${isMajor ? 'bg-white/10' : ''}">
                                 <div class="flex-grow truncate pr-1"><span class="opacity-70 truncate">${label}</span></div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
-                                    <span class="w-12 text-blue-300 font-black">${evPts}</span>
-                                    <span class="w-12 text-emerald-300 font-black border-r border-white/10">${stPts}</span>
+                                    <span class="w-12 ${isMajor ? 'text-blue-500' : 'text-blue-300'} font-black">${evPts}</span>
+                                    <span class="w-12 ${isMajor ? 'text-emerald-500' : 'text-emerald-300'} font-black border-r border-white/10">${stPts}</span>
                                     <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${isMajor ? '' : evWins+'w'}</span>
                                     <span class="w-12 text-emerald-300/60 text-[8px]">${isMajor ? '' : stWins+'w'}</span>
                                 </div>
@@ -213,6 +227,17 @@
                         if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
                     }
                 });
+
+                // Update Ryder Bar segments (Major points = dark, Regular points = light)
+                const target = 100;
+                const evRegularPts = evTotal - evMajorPts;
+                const stRegularPts = stTotal - stMajorPts;
+
+                document.getElementById('evan-bar-dark').style.width = (evMajorPts / target * 100) + '%';
+                document.getElementById('evan-bar-light').style.width = (evRegularPts / target * 100) + '%';
+                document.getElementById('steve-bar-dark').style.width = (stMajorPts / target * 100) + '%';
+                document.getElementById('steve-bar-light').style.width = (stRegularPts / target * 100) + '%';
+
                 populateYearMenu();
             } catch (e) { console.error(e); }
         }
