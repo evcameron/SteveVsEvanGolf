@@ -8,7 +8,7 @@
     <style>
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left-width: 5px; }
         
-        /* Updated Gradients */
+        /* Gradients */
         .bg-evan-win  { background: linear-gradient(to right, #bae6fd, #ffffff); } 
         .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
         .bg-draw      { background: radial-gradient(circle, #fef9c3 0%, #ffffff 80%); } 
@@ -55,7 +55,7 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-900 text-[13px] flex flex-col min-h-screen">
+<body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
 
     <header class="header-bg shadow-2xl pt-4 pb-3 sticky top-0 z-20">
         <div class="max-w-sm mx-auto px-4">
@@ -133,7 +133,7 @@
         </div>
     </header>
 
-    <main class="max-w-md mx-auto p-3 flex-grow">
+    <main class="max-w-md mx-auto p-3">
         <div id="filter-status" class="hidden mb-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
             <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Filtered: <span id="active-filter-name">None</span></span>
             <button onclick="resetFilter()" class="text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">Clear</button>
@@ -141,15 +141,15 @@
         <div id="results-list" class="space-y-3 pt-2">
             <p class="text-center py-10 text-slate-400 italic">Accessing Season Records...</p>
         </div>
+        
+        <div class="mt-12 mb-8 text-center">
+            <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit?gid=0#gid=0" 
+               target="_blank" 
+               class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors border-b border-slate-200 pb-0.5 inline-block">
+                Update Results
+            </a>
+        </div>
     </main>
-
-    <footer class="p-8 text-center">
-        <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit?gid=0#gid=0" 
-           target="_blank" 
-           class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors border-b border-slate-200 pb-0.5">
-            Update Results
-        </a>
-    </footer>
 
     <script>
         let CONFIG = { WebsiteYear: "2026" };
