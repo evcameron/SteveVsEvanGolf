@@ -31,7 +31,7 @@
         .rotate-180 { transform: rotate(180deg); }
         
         .points-divider { border-bottom: 2px solid rgba(255, 255, 255, 0.15); margin: 12px 0; }
-        .category-row { cursor: pointer; transition: all 0.2s; border-radius: 4px; margin: 0 -4px; padding: 2px 4px; position: relative; z-index: 10; }
+        .category-row { cursor: pointer; transition: all 0.2s; border-radius: 4px; margin: 0 -4px; padding: 2px 4px; position: relative; z-index: 10; border: 1px solid transparent; }
         .category-row:hover { background: rgba(255,255,255,0.08); }
         .category-row.active-filter { background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.4); }
 
@@ -232,7 +232,7 @@
                         }
 
                         list.innerHTML += `
-                            <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1 ${isMajor ? 'bg-white/10' : ''}">
+                            <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1">
                                 <div class="flex-grow truncate pr-1"><span class="opacity-70 truncate">${label}</span></div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
                                     <span class="w-12 text-blue-500 font-black">${evPts}</span>
@@ -327,12 +327,21 @@
 
         function applyFilter(cat, el, e) {
             e.stopPropagation();
+            
+            // Toggle Logic: If clicking the same one, clear it.
+            if (activeFilter === cat) {
+                resetFilter();
+                return;
+            }
+
             document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
             el.classList.add('active-filter');
             activeFilter = cat;
             document.getElementById('active-filter-name').innerText = cat;
             document.getElementById('filter-status').classList.remove('hidden');
             renderMatches();
+            
+            // Keep breakdown open but scroll to results
             const container = document.getElementById('breakdown-container');
             container.classList.remove('collapsed');
             container.classList.add('expanded');
