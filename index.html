@@ -49,12 +49,9 @@
 
         /* Ryder Cup Bar Styles */
         .ryder-bar-container { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; position: relative; }
-        
-        /* Solid Dark Bars for Majors */
         .evan-progress-dark  { height: 100%; background: #1d4ed8; transition: width 1s ease-in-out; float: left; }
         .steve-progress-dark  { height: 100%; background: #047857; transition: width 1s ease-in-out; float: right; }
 
-        /* Angled Dashed Bars for Regular Tournaments */
         .evan-progress-light { 
             height: 100%; 
             background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 4px, #3b82f6 4px, #3b82f6 8px);
@@ -238,8 +235,8 @@
                             <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1 ${isMajor ? 'bg-white/10' : ''}">
                                 <div class="flex-grow truncate pr-1"><span class="opacity-70 truncate">${label}</span></div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
-                                    <span class="w-12 ${isMajor ? 'text-blue-500' : 'text-blue-300'} font-black">${evPts}</span>
-                                    <span class="w-12 ${isMajor ? 'text-emerald-500' : 'text-emerald-300'} font-black border-r border-white/10">${stPts}</span>
+                                    <span class="w-12 text-blue-500 font-black">${evPts}</span>
+                                    <span class="w-12 text-emerald-500 font-black border-r border-white/10">${stPts}</span>
                                     <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${isMajor ? '' : evWins+'w'}</span>
                                     <span class="w-12 text-emerald-300/60 text-[8px]">${isMajor ? '' : stWins+'w'}</span>
                                 </div>
