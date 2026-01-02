@@ -56,7 +56,7 @@
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
 
         /* Major Highlight Styles */
-        .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; }
+        .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
         /* Modal Styles */
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
@@ -231,7 +231,7 @@
             document.getElementById('analytics-modal').classList.add('show');
             const chronMatches = [...allMatches].reverse();
             
-            // 1. Overall Points Chart (Now with Major indicators)
+            // 1. Overall Points Chart - Use actual Running Total from data
             const pointsHistory = chronMatches.map(m => {
                 return {
                     val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
@@ -240,17 +240,15 @@
             });
             renderSparkline('modal-chart-overall', pointsHistory, 160);
 
-            // 2. Par 3 Win Momentum
+            // 2-4. Categorical Momentum (Starts at 0 for win count diff)
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
             renderSparkline('modal-chart-par3', p3History.map(v => ({val: v, isMajor: false})), 96);
             updateStatLabel('stat-par3', p3History);
 
-            // 3. 18 Hole Win Momentum
             const h18History = getCategoricalWinHistory(chronMatches, '18');
             renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v, isMajor: false})), 96);
             updateStatLabel('stat-18hole', h18History);
 
-            // 4. 9 Hole Win Momentum
             const h9History = getCategoricalWinHistory(chronMatches, '9');
             renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v, isMajor: false})), 96);
             updateStatLabel('stat-9hole', h9History);
@@ -284,17 +282,23 @@
             const zeroLine = height / 2;
             chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
             
-            if (dataPoints.length < 2) {
+            if (dataPoints.length < 1) {
                 chart.innerHTML += `<div class="flex items-center justify-center h-full text-white/20 text-[10px] uppercase font-bold">Waiting for Rounds...</div>`;
                 return;
             }
 
-            const maxLead = Math.max(...dataPoints.map(d => Math.abs(d.val)), 1);
-            const stepX = 100 / (dataPoints.length - 1);
+            // Get range for scaling
+            const vals = dataPoints.map(d => d.val);
+            const maxVal = Math.max(...vals);
+            const minVal = Math.min(...vals);
+            const absMax = Math.max(Math.abs(maxVal), Math.abs(minVal), 1);
+            
+            const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
             dataPoints.forEach((point, i) => {
-                const x = i * stepX;
-                const y = zeroLine - (point.val * ((height / 2 - 20) / maxLead));
+                const x = dataPoints.length > 1 ? i * stepX : 50;
+                // Scale based on the center (0)
+                const y = zeroLine - (point.val * ((height / 2 - 20) / absMax));
                 
                 const dot = document.createElement('div');
                 const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
@@ -306,7 +310,7 @@
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextVal * ((height / 2 - 20) / maxLead));
+                    const nextY = zeroLine - (nextVal * ((height / 2 - 20) / absMax));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
