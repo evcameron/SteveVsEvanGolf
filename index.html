@@ -16,7 +16,6 @@
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
         
-        /* Restored Major Styles */
         .major-card { border: 2px solid #fbbf24 !important; border-left-width: 5px !important; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
         .major-header { background: #fbbf24; color: #78350f; }
 
@@ -120,7 +119,10 @@
                     </div>
                     <div id="breakdown-container" class="collapsed">
                         <div class="mt-4 px-1">
-                            <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase mb-1">Season Lead Momentum</p>
+                            <div class="flex justify-between items-end mb-1">
+                                <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Momentum (YTD Pts)</p>
+                                <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
+                            </div>
                             <div id="season-chart" class="chart-container">
                                 <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>
                             </div>
@@ -233,30 +235,36 @@
 
         function buildMomentumChart() {
             const chart = document.getElementById('season-chart');
+            const spreadLabel = document.getElementById('chart-spread-label');
             const containerHeight = 70;
             const zeroLine = containerHeight / 2;
             chart.innerHTML = '<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>';
             
-            if (allMatches.length < 2) return;
+            if (allMatches.length < 2) {
+                spreadLabel.innerText = "No Data";
+                return;
+            }
 
             const chronMatches = [...allMatches].reverse();
-            let evCurrent = 0, stCurrent = 0;
+            
+            // Using Column U (20) and V (21) for YTD point progression
             const history = chronMatches.map(m => {
-                const w = m[9]?.toLowerCase();
-                const isMaj = m[3]?.trim().length > 0;
-                const pts = isMaj ? 3 : 1;
-                if (w.includes('evan')) evCurrent += pts;
-                else if (w.includes('steve')) stCurrent += pts;
-                else { evCurrent += (pts/2); stCurrent += (pts/2); }
-                return evCurrent - stCurrent;
+                const evYTD = parseFloat(m[20]) || 0;
+                const stYTD = parseFloat(m[21]) || 0;
+                return evYTD - stYTD;
             });
+
+            // Update Spread Label with latest match value
+            const finalSpread = history[history.length - 1];
+            spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
+            spreadLabel.className = `text-[9px] font-black italic px-1.5 py-0.5 rounded leading-none ${finalSpread > 0 ? 'bg-blue-600 text-white' : finalSpread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
 
             const maxLead = Math.max(...history.map(Math.abs), 5);
             const stepX = 100 / (history.length - 1);
 
             history.forEach((lead, i) => {
                 const x = i * stepX;
-                const y = zeroLine - (lead * ( (containerHeight/2 - 5) / maxLead));
+                const y = zeroLine - (lead * ((containerHeight / 2 - 10) / maxLead));
                 
                 const dot = document.createElement('div');
                 dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-white'}`;
@@ -267,7 +275,7 @@
                 if (i < history.length - 1) {
                     const nextLead = history[i+1];
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextLead * ((containerHeight/2 - 5) / maxLead));
+                    const nextY = zeroLine - (nextLead * ((containerHeight / 2 - 10) / maxLead));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
