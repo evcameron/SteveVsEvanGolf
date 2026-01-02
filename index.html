@@ -55,6 +55,9 @@
         .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
 
+        /* Major Highlight Styles */
+        .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; }
+
         /* Modal Styles */
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
@@ -72,7 +75,7 @@
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div>
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead</p>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead <span class="text-amber-400 normal-case ml-2">(🏆 = Major)</span></p>
                 <div id="modal-chart-overall" class="chart-container h-40 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
@@ -228,23 +231,28 @@
             document.getElementById('analytics-modal').classList.add('show');
             const chronMatches = [...allMatches].reverse();
             
-            // 1. Overall Points Chart
-            const pointsHistory = chronMatches.map(m => (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0));
+            // 1. Overall Points Chart (Now with Major indicators)
+            const pointsHistory = chronMatches.map(m => {
+                return {
+                    val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
+                    isMajor: m[3] && m[3].trim() !== ""
+                };
+            });
             renderSparkline('modal-chart-overall', pointsHistory, 160);
 
             // 2. Par 3 Win Momentum
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
-            renderSparkline('modal-chart-par3', p3History, 96);
+            renderSparkline('modal-chart-par3', p3History.map(v => ({val: v, isMajor: false})), 96);
             updateStatLabel('stat-par3', p3History);
 
             // 3. 18 Hole Win Momentum
             const h18History = getCategoricalWinHistory(chronMatches, '18');
-            renderSparkline('modal-chart-18hole', h18History, 96);
+            renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v, isMajor: false})), 96);
             updateStatLabel('stat-18hole', h18History);
 
             // 4. 9 Hole Win Momentum
             const h9History = getCategoricalWinHistory(chronMatches, '9');
-            renderSparkline('modal-chart-9hole', h9History, 96);
+            renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v, isMajor: false})), 96);
             updateStatLabel('stat-9hole', h9History);
         }
 
@@ -253,9 +261,7 @@
             const history = [0];
             matches.forEach(m => {
                 const cat = m[2].toLowerCase();
-                // Special check for '9' so it doesn't accidentally catch '18'
                 if (keyword === '9' && cat.includes('18')) return;
-                
                 if (cat.includes(keyword)) {
                     const winner = m[9].toLowerCase();
                     if (winner.includes('evan')) diff++;
@@ -273,32 +279,34 @@
 
         function closeModal() { document.getElementById('analytics-modal').classList.remove('show'); }
 
-        function renderSparkline(containerId, history, height) {
+        function renderSparkline(containerId, dataPoints, height) {
             const chart = document.getElementById(containerId);
             const zeroLine = height / 2;
             chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
             
-            if (history.length < 2) {
+            if (dataPoints.length < 2) {
                 chart.innerHTML += `<div class="flex items-center justify-center h-full text-white/20 text-[10px] uppercase font-bold">Waiting for Rounds...</div>`;
                 return;
             }
 
-            const maxLead = Math.max(...history.map(Math.abs), 1);
-            const stepX = 100 / (history.length - 1);
+            const maxLead = Math.max(...dataPoints.map(d => Math.abs(d.val)), 1);
+            const stepX = 100 / (dataPoints.length - 1);
 
-            history.forEach((lead, i) => {
+            dataPoints.forEach((point, i) => {
                 const x = i * stepX;
-                const y = zeroLine - (lead * ((height / 2 - 15) / maxLead));
+                const y = zeroLine - (point.val * ((height / 2 - 20) / maxLead));
+                
                 const dot = document.createElement('div');
-                dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white'}`;
+                const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
+                dot.className = `chart-point ${point.isMajor ? 'major-point' : baseClass}`;
                 dot.style.left = `${x}%`;
                 dot.style.top = `${y}px`;
                 chart.appendChild(dot);
 
-                if (i < history.length - 1) {
-                    const nextLead = history[i+1];
+                if (i < dataPoints.length - 1) {
+                    const nextVal = dataPoints[i+1].val;
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextLead * ((height / 2 - 15) / maxLead));
+                    const nextY = zeroLine - (nextVal * ((height / 2 - 20) / maxLead));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -375,12 +383,16 @@
                 renderMatches();
                 updateStats();
                 
-                // Build the preview sparkline for the main page
                 const chronMatches = [...allMatches].reverse();
-                const history = chronMatches.map(m => (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0));
-                renderSparkline('season-chart', history, 70);
+                const pointsHistory = chronMatches.map(m => {
+                    return {
+                        val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
+                        isMajor: m[3] && m[3].trim() !== ""
+                    };
+                });
+                renderSparkline('season-chart', pointsHistory, 70);
                 
-                const finalSpread = history[history.length - 1];
+                const finalSpread = pointsHistory.length > 0 ? pointsHistory[pointsHistory.length - 1].val : 0;
                 const spreadLabel = document.getElementById('chart-spread-label');
                 spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
                 spreadLabel.className = `text-[9px] font-black italic px-1.5 py-0.5 rounded leading-none ${finalSpread > 0 ? 'bg-blue-600 text-white' : finalSpread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
