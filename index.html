@@ -52,20 +52,30 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
         .chart-container { width: 100%; position: relative; }
-        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
+        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
 
         /* Major Highlight Styles */
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
-        /* Tooltip Styles */
-        .chart-tooltip {
-            position: absolute; background: #0f172a; color: white; padding: 6px 10px; border-radius: 4px;
-            font-size: 10px; font-weight: bold; pointer-events: none; z-index: 100; white-space: nowrap;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            transform: translate(-50%, -130%); display: none;
+        /* Floating Comment Labels */
+        .chart-comment-label {
+            position: absolute;
+            font-size: 8px;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(0,0,0,0.6);
+            padding: 2px 4px;
+            border-radius: 3px;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 30;
+            transform: translateX(-50%);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .chart-point:hover .chart-tooltip { display: block; }
 
         /* Modal Styles */
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
@@ -85,7 +95,7 @@
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div>
                 <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead</p>
-                <div id="modal-chart-overall" class="chart-container h-40 border-b border-white/5 bg-white/5 rounded-lg"></div>
+                <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
                     <span>Current Day</span>
@@ -178,7 +188,7 @@
                                 <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Momentum (YTD Pts)</p>
                                 <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
                             </div>
-                            <div id="season-chart" class="chart-container h-[70px]">
+                            <div id="season-chart" class="chart-container h-[80px]">
                                 <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>
                             </div>
                         </div>
@@ -247,7 +257,7 @@
                     comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
                 };
             });
-            renderSparkline('modal-chart-overall', pointsHistory, 160);
+            renderSparkline('modal-chart-overall', pointsHistory, 176);
 
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
             renderSparkline('modal-chart-par3', p3History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
@@ -301,27 +311,36 @@
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
-                const y = zeroLine - (point.val * ((height / 2 - 25) / absMax));
+                // Leave vertical room for labels (25px padding)
+                const y = zeroLine - (point.val * ((height / 2 - 35) / absMax));
                 
                 const dot = document.createElement('div');
                 const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
                 dot.className = `chart-point ${point.isMajor ? 'major-point' : baseClass}`;
                 dot.style.left = `${x}%`;
                 dot.style.top = `${y}px`;
-
-                if (point.comment) {
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'chart-tooltip';
-                    tooltip.innerText = point.comment;
-                    dot.appendChild(tooltip);
-                }
-
                 chart.appendChild(dot);
+
+                // Permanent Comment Labels
+                if (point.comment) {
+                    const label = document.createElement('div');
+                    label.className = 'chart-comment-label';
+                    label.innerText = point.comment;
+                    label.style.left = `${x}%`;
+                    
+                    // Logic: If point is above center line, put comment below. If below, put above.
+                    if (point.val >= 0) {
+                        label.style.top = `${y + 10}px`;
+                    } else {
+                        label.style.top = `${y - 20}px`;
+                    }
+                    chart.appendChild(label);
+                }
 
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextVal * ((height / 2 - 25) / absMax));
+                    const nextY = zeroLine - (nextVal * ((height / 2 - 35) / absMax));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -406,7 +425,7 @@
                         comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
                     };
                 });
-                renderSparkline('season-chart', pointsHistory, 70);
+                renderSparkline('season-chart', pointsHistory, 80);
                 
                 const finalSpread = pointsHistory.length > 0 ? pointsHistory[pointsHistory.length - 1].val : 0;
                 const spreadLabel = document.getElementById('chart-spread-label');
