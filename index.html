@@ -48,9 +48,8 @@
         .steve-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px); transition: width 1s ease-in-out; float: right; }
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
-        /* Chart Styling */
-        .chart-container { height: 80px; width: 100%; margin: 15px 0; position: relative; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); transition: all 0.3s; z-index: 10; }
+        .chart-container { height: 70px; width: 100%; margin: 10px 0; position: relative; }
+        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
     </style>
 </head>
@@ -116,13 +115,10 @@
                         </div>
                     </div>
                     <div id="breakdown-container" class="collapsed">
-                        <div class="mt-4 mb-2">
-                            <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Lead Momentum</p>
+                        <div class="mt-4 px-1">
+                            <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase mb-1">Season Lead Momentum</p>
                             <div id="season-chart" class="chart-container">
-                                <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div> </div>
-                            <div class="flex justify-between text-[7px] font-black opacity-20 text-white uppercase">
-                                <span>Start</span>
-                                <span>Recent</span>
+                                <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>
                             </div>
                         </div>
 
@@ -233,12 +229,13 @@
 
         function buildMomentumChart() {
             const chart = document.getElementById('season-chart');
-            const zeroLine = 40; // 80px height / 2
+            const containerHeight = 70;
+            const zeroLine = containerHeight / 2;
             chart.innerHTML = '<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>';
             
             if (allMatches.length < 2) return;
 
-            // Chromological order for chart
+            // Chart needs chronological (oldest first), list needs reverse (newest first)
             const chronMatches = [...allMatches].reverse();
             let evCurrent = 0, stCurrent = 0;
             const history = chronMatches.map(m => {
@@ -256,29 +253,25 @@
 
             history.forEach((lead, i) => {
                 const x = i * stepX;
-                const y = zeroLine - (lead * (30 / maxLead));
+                const y = zeroLine - (lead * ( (containerHeight/2 - 5) / maxLead));
                 
-                // Point
                 const dot = document.createElement('div');
-                dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white'}`;
+                dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-white'}`;
                 dot.style.left = `${x}%`;
                 dot.style.top = `${y}px`;
-                dot.title = `Lead: ${lead > 0 ? 'Evan +' + lead : lead < 0 ? 'Steve +' + Math.abs(lead) : 'Tie'}`;
                 chart.appendChild(dot);
 
-                // Line segment
                 if (i < history.length - 1) {
                     const nextLead = history[i+1];
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextLead * (30 / maxLead));
-                    
+                    const nextY = zeroLine - (nextLead * ((containerHeight/2 - 5) / maxLead));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
                     const line = document.createElement('div');
-                    line.className = 'chart-line bg-white/20';
+                    line.className = 'chart-line bg-white/10';
                     line.style.width = `${dist}px`;
                     line.style.left = `${x}%`;
                     line.style.top = `${y}px`;
@@ -301,6 +294,7 @@
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+                // Store in reverse (most recent first) for the list
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
@@ -312,7 +306,7 @@
             const container = document.getElementById('results-list');
             container.innerHTML = '';
             const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[3]?.trim() === activeFilter) : allMatches;
-            if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found for this year.</p>`; return; }
+            if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found.</p>`; return; }
 
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
