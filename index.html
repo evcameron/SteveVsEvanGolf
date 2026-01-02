@@ -8,7 +8,6 @@
     <style>
         .score-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left-width: 5px; }
         
-        /* Gradients */
         .bg-evan-win  { background: linear-gradient(to right, #bae6fd, #ffffff); } 
         .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
         .bg-draw      { background: radial-gradient(circle, #fef9c3 0%, #ffffff 80%); } 
@@ -16,17 +15,13 @@
         .border-par3     { border-left-color: #94a3b8; }
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
-        .border-other    { border-left-color: #cbd5e1; }
-
-        .major-card { border: 2px solid #fbbf24 !important; border-left-width: 5px !important; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
-        .major-header { background: #fbbf24; color: #78350f; }
         
         .header-bg { background-color: #052e16; } 
         .header-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); color: white; }
         
         #breakdown-container { transition: max-height 0.3s ease-out, opacity 0.2s ease-in-out; overflow: hidden; }
         .collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
-        .expanded { max-height: 1000px; opacity: 1; }
+        .expanded { max-height: 1200px; opacity: 1; }
         .chevron { transition: transform 0.3s ease; }
         .rotate-180 { transform: rotate(180deg); }
         
@@ -45,7 +40,6 @@
         .year-menu.show { display: block; }
         .year-item { padding: 8px 12px; cursor: pointer; color: white; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .year-item:hover { background: rgba(255,255,255,0.1); }
-        .year-item:last-child { border-bottom: none; }
 
         .ryder-bar-container { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; position: relative; }
         .evan-progress-dark  { height: 100%; background: #1d4ed8; transition: width 1s ease-in-out; float: left; }
@@ -53,6 +47,11 @@
         .evan-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 4px, #3b82f6 4px, #3b82f6 8px); transition: width 1s ease-in-out; float: left; }
         .steve-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px); transition: width 1s ease-in-out; float: right; }
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
+
+        /* Chart Styling */
+        .chart-container { height: 80px; width: 100%; margin: 15px 0; position: relative; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); transition: all 0.3s; z-index: 10; }
+        .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
@@ -77,16 +76,16 @@
             </div>
             
             <div class="flex flex-col gap-2">
-                <div class="header-card rounded-xl p-4 shadow-lg">
+                <div class="header-card rounded-xl p-4 shadow-lg text-center">
                     <div class="flex justify-between items-end mb-2">
-                        <div class="text-left">
+                        <div class="text-left w-20">
                             <span class="block text-[10px] font-black uppercase opacity-60 text-white leading-none mb-1">Evan</span>
                             <span id="evan-points" class="text-3xl font-black text-blue-400 leading-none">--</span>
                         </div>
-                        <div class="text-center pb-1">
-                             <span id="total-match-info" class="text-[8px] font-black uppercase opacity-40 text-white tracking-[0.2em]">Current Standings</span>
+                        <div class="flex-grow pb-1">
+                             <span class="text-[8px] font-black uppercase opacity-40 text-white tracking-[0.2em]">Current Standings</span>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right w-20">
                             <span class="block text-[10px] font-black uppercase opacity-60 text-white leading-none mb-1">Steve</span>
                             <span id="steve-points" class="text-3xl font-black text-emerald-400 leading-none">--</span>
                         </div>
@@ -109,7 +108,7 @@
 
                 <div id="main-breakdown-card" onclick="toggleBreakdown()" class="header-card rounded-xl px-3 py-2 text-left cursor-pointer hover:bg-white/10 transition-colors">
                     <div class="w-full flex justify-between items-center">
-                        <p class="text-[9px] uppercase tracking-[0.2em] font-black opacity-40 text-white">Points Breakdown</p>
+                        <p class="text-[9px] uppercase tracking-[0.2em] font-black opacity-40 text-white">Analytics & Breakdown</p>
                         <div class="bg-white/10 p-1 rounded-md">
                             <svg id="chevron-icon" class="chevron rotate-180 w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>
@@ -117,6 +116,16 @@
                         </div>
                     </div>
                     <div id="breakdown-container" class="collapsed">
+                        <div class="mt-4 mb-2">
+                            <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Lead Momentum</p>
+                            <div id="season-chart" class="chart-container">
+                                <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div> </div>
+                            <div class="flex justify-between text-[7px] font-black opacity-20 text-white uppercase">
+                                <span>Start</span>
+                                <span>Recent</span>
+                            </div>
+                        </div>
+
                         <div class="pt-3 mb-2 flex text-[7px] uppercase font-black opacity-30 border-b border-white/5 pb-1 text-white">
                             <span class="flex-grow">CATEGORY</span>
                             <div class="flex w-52 text-center">
@@ -141,14 +150,6 @@
         <div id="results-list" class="space-y-3 pt-2">
             <p class="text-center py-10 text-slate-400 italic">Accessing Season Records...</p>
         </div>
-        
-        <div class="mt-12 mb-8 text-center">
-            <a href="https://docs.google.com/spreadsheets/d/1M4FJ7Nfk9rLcPoUvmDHnOp-PHfUfKgbJjYl8LSvyF1Q/edit?gid=0#gid=0" 
-               target="_blank" 
-               class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors border-b border-slate-200 pb-0.5 inline-block">
-                Update Results
-            </a>
-        </div>
     </main>
 
     <script>
@@ -157,8 +158,8 @@
         const DETAILS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgE990XAIusYwh-kIJw35ZMFn7_886JopnebL0YFuGCDXVF7wUtIwolZuCZXY62AjBJM2Y7fLhoI-l/pub?gid=1591713882&single=true&output=csv';
 
         let allMatches = []; 
-        let activeFilter = null;
         let availableYears = new Set();
+        let activeFilter = null;
 
         function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
         window.onclick = () => document.getElementById('year-menu').classList.remove('show');
@@ -173,13 +174,9 @@
         function toggleBreakdown() {
             const container = document.getElementById('breakdown-container');
             const icon = document.getElementById('chevron-icon');
-            if (container.classList.contains('expanded')) {
-                container.classList.replace('expanded', 'collapsed');
-                icon.classList.add('rotate-180');
-            } else {
-                container.classList.replace('collapsed', 'expanded');
-                icon.classList.remove('rotate-180');
-            }
+            container.classList.toggle('expanded');
+            container.classList.toggle('collapsed');
+            icon.classList.toggle('rotate-180');
         }
 
         async function fetchOverallDetails() {
@@ -190,9 +187,7 @@
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
                 
-                let evTotal = 0, stTotal = 0;
-                let evMajorPts = 0, stMajorPts = 0;
-                let tournamentCount = 0;
+                let evTotal = 0, stTotal = 0, evMajorPts = 0, stMajorPts = 0, tournamentCount = 0;
 
                 rows.forEach(col => {
                     const rowYear = col[5]?.replace(/"/g, '').trim(); 
@@ -207,19 +202,13 @@
                     const evWins = col[8]?.replace(/"/g, '').trim(), stWins = col[9]?.replace(/"/g, '').trim();
 
                     if (label.toLowerCase() === 'total') {
-                        evTotal = evPts;
-                        stTotal = stPts;
+                        evTotal = evPts; stTotal = stPts;
                         document.getElementById('evan-points').innerText = evTotal;
                         document.getElementById('steve-points').innerText = stTotal;
                     } else {
                         tournamentCount++;
-                        if (isMajor) {
-                            evMajorPts += evPts;
-                            stMajorPts += stPts;
-                        }
-
-                        list.innerHTML += `
-                            <div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1">
+                        if (isMajor) { evMajorPts += evPts; stMajorPts += stPts; }
+                        list.innerHTML += `<div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1">
                                 <div class="flex-grow truncate pr-1"><span class="opacity-70 truncate">${label}</span></div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
                                     <span class="w-12 text-blue-500 font-black">${evPts}</span>
@@ -233,16 +222,70 @@
                 });
 
                 const target = 100;
-                const evRegularPts = evTotal - evMajorPts;
-                const stRegularPts = stTotal - stMajorPts;
-
                 document.getElementById('evan-bar-dark').style.width = (evMajorPts / target * 100) + '%';
-                document.getElementById('evan-bar-light').style.width = (evRegularPts / target * 100) + '%';
+                document.getElementById('evan-bar-light').style.width = ((evTotal - evMajorPts) / target * 100) + '%';
                 document.getElementById('steve-bar-dark').style.width = (stMajorPts / target * 100) + '%';
-                document.getElementById('steve-bar-light').style.width = (stRegularPts / target * 100) + '%';
+                document.getElementById('steve-bar-light').style.width = ((stTotal - stMajorPts) / target * 100) + '%';
 
                 populateYearMenu();
             } catch (e) { console.error(e); }
+        }
+
+        function buildMomentumChart() {
+            const chart = document.getElementById('season-chart');
+            const zeroLine = 40; // 80px height / 2
+            chart.innerHTML = '<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>';
+            
+            if (allMatches.length < 2) return;
+
+            // Chromological order for chart
+            const chronMatches = [...allMatches].reverse();
+            let evCurrent = 0, stCurrent = 0;
+            const history = chronMatches.map(m => {
+                const w = m[9]?.toLowerCase();
+                const isMaj = m[3]?.trim().length > 0;
+                const pts = isMaj ? 3 : 1;
+                if (w.includes('evan')) evCurrent += pts;
+                else if (w.includes('steve')) stCurrent += pts;
+                else { evCurrent += (pts/2); stCurrent += (pts/2); }
+                return evCurrent - stCurrent;
+            });
+
+            const maxLead = Math.max(...history.map(Math.abs), 5);
+            const stepX = 100 / (history.length - 1);
+
+            history.forEach((lead, i) => {
+                const x = i * stepX;
+                const y = zeroLine - (lead * (30 / maxLead));
+                
+                // Point
+                const dot = document.createElement('div');
+                dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white'}`;
+                dot.style.left = `${x}%`;
+                dot.style.top = `${y}px`;
+                dot.title = `Lead: ${lead > 0 ? 'Evan +' + lead : lead < 0 ? 'Steve +' + Math.abs(lead) : 'Tie'}`;
+                chart.appendChild(dot);
+
+                // Line segment
+                if (i < history.length - 1) {
+                    const nextLead = history[i+1];
+                    const nextX = (i + 1) * stepX;
+                    const nextY = zeroLine - (nextLead * (30 / maxLead));
+                    
+                    const dx = (nextX - x) * (chart.clientWidth / 100);
+                    const dy = nextY - y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                    const line = document.createElement('div');
+                    line.className = 'chart-line bg-white/20';
+                    line.style.width = `${dist}px`;
+                    line.style.left = `${x}%`;
+                    line.style.top = `${y}px`;
+                    line.style.transform = `rotate(${angle}deg)`;
+                    chart.appendChild(line);
+                }
+            });
         }
 
         function populateYearMenu() {
@@ -261,6 +304,7 @@
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
+                buildMomentumChart();
             } catch (e) { console.error(e); }
         }
 
@@ -272,15 +316,12 @@
 
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
-                const evS = col[5]?.trim(), stS = col[6]?.trim(); 
-                const evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
+                const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
-                
                 let catLower = cat.toLowerCase();
                 let catClass = catLower.includes('par 3 round') ? 'border-par3' : (catLower.includes('18') ? 'border-18hole' : 'border-9hole');
                 
-                container.innerHTML += `
-                    <div class="flex flex-col">
+                container.innerHTML += `<div class="flex flex-col">
                         ${maj ? `<div class="flex justify-start pl-4"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>` : ''}
                         <div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
@@ -288,15 +329,9 @@
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 w-[42%]">
-                                    <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span>
-                                    <span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5 ${isEvW ? 'opacity-60' : 'opacity-70'}">(${evS})</span></span>
-                                </div>
+                                <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span></div>
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
-                                <div class="flex items-center justify-end gap-2 w-[42%] text-right">
-                                    <span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5 ${isStW ? 'opacity-60' : 'opacity-70'}">(${stS})</span> ${stH}</span>
-                                    <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span>
-                                </div>
+                                <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span></div>
                             </div>
                         </div>
                     </div>`;
@@ -315,10 +350,7 @@
 
         function applyFilter(cat, el, e) {
             e.stopPropagation();
-            if (activeFilter === cat) {
-                resetFilter();
-                return;
-            }
+            if (activeFilter === cat) { resetFilter(); return; }
             document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
             el.classList.add('active-filter');
             activeFilter = cat;
