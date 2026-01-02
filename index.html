@@ -51,53 +51,51 @@
         .steve-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px); transition: width 1s ease-in-out; float: right; }
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
-        .chart-container { height: 70px; width: 100%; margin: 10px 0; position: relative; }
+        .chart-container { width: 100%; position: relative; }
         .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
 
         /* Modal Styles */
-        #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.95); backdrop-filter: blur(10px); }
+        #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
 
     <div id="analytics-modal" class="p-6 flex-col overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-6">
             <h2 class="text-white text-xl font-black uppercase italic tracking-tighter">Season Deep Dive</h2>
             <button onclick="closeModal()" class="text-white/50 hover:text-white bg-white/10 p-2 rounded-full">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
 
-        <div class="space-y-8 max-w-sm mx-auto w-full">
+        <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div>
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-4">Overall Points YTD Momentum</p>
-                <div id="modal-chart" class="chart-container h-40 border-b border-white/10">
-                     <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/20"></div>
-                </div>
-                <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest">
-                    <span>Opening Day</span>
-                    <span>Present Day</span>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead</p>
+                <div id="modal-chart-overall" class="chart-container h-40 border-b border-white/5 bg-white/5 rounded-lg"></div>
+                <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
+                    <span>Season Start</span>
+                    <span>Current Day</span>
                 </div>
             </div>
 
-            <div class="space-y-6 pt-4 border-t border-white/10">
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-2">Categorical Win Races</p>
+            <div class="grid gap-6 pt-4 border-t border-white/10">
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase">Win Momentum by Type</p>
                 
-                <div id="race-par3">
-                    <div class="flex justify-between text-[10px] font-bold text-white mb-1 uppercase"><span>Par 3 Wins</span><span id="label-par3">--</span></div>
-                    <div class="h-2 bg-white/10 rounded-full overflow-hidden flex"><div id="bar-par3-ev" class="bg-blue-500 h-full"></div><div id="bar-par3-st" class="bg-emerald-500 h-full"></div></div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>Par 3 Win Lead</span><span id="stat-par3">--</span></div>
+                    <div id="modal-chart-par3" class="chart-container h-24 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 </div>
 
-                <div id="race-18hole">
-                    <div class="flex justify-between text-[10px] font-bold text-white mb-1 uppercase"><span>18 Hole Wins</span><span id="label-18hole">--</span></div>
-                    <div class="h-2 bg-white/10 rounded-full overflow-hidden flex"><div id="bar-18-ev" class="bg-blue-500 h-full"></div><div id="bar-18-st" class="bg-emerald-500 h-full"></div></div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>18 Hole Win Lead</span><span id="stat-18hole">--</span></div>
+                    <div id="modal-chart-18hole" class="chart-container h-24 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 </div>
 
-                <div id="race-9hole">
-                    <div class="flex justify-between text-[10px] font-bold text-white mb-1 uppercase"><span>9 Hole Wins</span><span id="label-9hole">--</span></div>
-                    <div class="h-2 bg-white/10 rounded-full overflow-hidden flex"><div id="bar-9-ev" class="bg-blue-500 h-full"></div><div id="bar-9-st" class="bg-emerald-500 h-full"></div></div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>9 Hole Win Lead</span><span id="stat-9hole">--</span></div>
+                    <div id="modal-chart-9hole" class="chart-container h-24 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 </div>
             </div>
         </div>
@@ -168,7 +166,7 @@
                                 <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Momentum (YTD Pts)</p>
                                 <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
                             </div>
-                            <div id="season-chart" class="chart-container">
+                            <div id="season-chart" class="chart-container h-[70px]">
                                 <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>
                             </div>
                         </div>
@@ -228,11 +226,93 @@
 
         function openModal() {
             document.getElementById('analytics-modal').classList.add('show');
-            buildMomentumChart(true);
-            calculateCategoricalWins();
+            const chronMatches = [...allMatches].reverse();
+            
+            // 1. Overall Points Chart
+            const pointsHistory = chronMatches.map(m => (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0));
+            renderSparkline('modal-chart-overall', pointsHistory, 160);
+
+            // 2. Par 3 Win Momentum
+            const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
+            renderSparkline('modal-chart-par3', p3History, 96);
+            updateStatLabel('stat-par3', p3History);
+
+            // 3. 18 Hole Win Momentum
+            const h18History = getCategoricalWinHistory(chronMatches, '18');
+            renderSparkline('modal-chart-18hole', h18History, 96);
+            updateStatLabel('stat-18hole', h18History);
+
+            // 4. 9 Hole Win Momentum
+            const h9History = getCategoricalWinHistory(chronMatches, '9');
+            renderSparkline('modal-chart-9hole', h9History, 96);
+            updateStatLabel('stat-9hole', h9History);
+        }
+
+        function getCategoricalWinHistory(matches, keyword) {
+            let diff = 0;
+            const history = [0];
+            matches.forEach(m => {
+                const cat = m[2].toLowerCase();
+                // Special check for '9' so it doesn't accidentally catch '18'
+                if (keyword === '9' && cat.includes('18')) return;
+                
+                if (cat.includes(keyword)) {
+                    const winner = m[9].toLowerCase();
+                    if (winner.includes('evan')) diff++;
+                    else if (winner.includes('steve')) diff--;
+                    history.push(diff);
+                }
+            });
+            return history;
+        }
+
+        function updateStatLabel(id, history) {
+            const last = history[history.length - 1];
+            document.getElementById(id).innerText = last > 0 ? `Evan +${last}` : last < 0 ? `Steve +${Math.abs(last)}` : `Even`;
         }
 
         function closeModal() { document.getElementById('analytics-modal').classList.remove('show'); }
+
+        function renderSparkline(containerId, history, height) {
+            const chart = document.getElementById(containerId);
+            const zeroLine = height / 2;
+            chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
+            
+            if (history.length < 2) {
+                chart.innerHTML += `<div class="flex items-center justify-center h-full text-white/20 text-[10px] uppercase font-bold">Waiting for Rounds...</div>`;
+                return;
+            }
+
+            const maxLead = Math.max(...history.map(Math.abs), 1);
+            const stepX = 100 / (history.length - 1);
+
+            history.forEach((lead, i) => {
+                const x = i * stepX;
+                const y = zeroLine - (lead * ((height / 2 - 15) / maxLead));
+                const dot = document.createElement('div');
+                dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white'}`;
+                dot.style.left = `${x}%`;
+                dot.style.top = `${y}px`;
+                chart.appendChild(dot);
+
+                if (i < history.length - 1) {
+                    const nextLead = history[i+1];
+                    const nextX = (i + 1) * stepX;
+                    const nextY = zeroLine - (nextLead * ((height / 2 - 15) / maxLead));
+                    const dx = (nextX - x) * (chart.clientWidth / 100);
+                    const dy = nextY - y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    const line = document.createElement('div');
+                    line.className = 'chart-line bg-white/10';
+                    line.style.width = `${dist}px`;
+                    line.style.left = `${x}%`;
+                    line.style.top = `${y}px`;
+                    line.style.transform = `rotate(${angle}deg)`;
+                    chart.appendChild(line);
+                }
+            });
+        }
 
         async function fetchOverallDetails() {
             try {
@@ -286,85 +366,6 @@
             } catch (e) { console.error(e); }
         }
 
-        function calculateCategoricalWins() {
-            let p3ev = 0, p3st = 0, h18ev = 0, h18st = 0, h9ev = 0, h9st = 0;
-            allMatches.forEach(m => {
-                const cat = m[2].toLowerCase();
-                const winner = m[9].toLowerCase();
-                if (cat.includes('par 3')) { if(winner.includes('evan')) p3ev++; else if(winner.includes('steve')) p3st++; }
-                else if (cat.includes('18')) { if(winner.includes('evan')) h18ev++; else if(winner.includes('steve')) h18st++; }
-                else if (cat.includes('9')) { if(winner.includes('evan')) h9ev++; else if(winner.includes('steve')) h9st++; }
-            });
-
-            const setBar = (idEv, idSt, idLabel, ev, st) => {
-                const total = ev + st || 1;
-                document.getElementById(idEv).style.width = (ev/total*100) + '%';
-                document.getElementById(idSt).style.width = (st/total*100) + '%';
-                document.getElementById(idLabel).innerText = `${ev} - ${st}`;
-            };
-
-            setBar('bar-par3-ev', 'bar-par3-st', 'label-par3', p3ev, p3st);
-            setBar('bar-18-ev', 'bar-18-st', 'label-18hole', h18ev, h18st);
-            setBar('bar-9-ev', 'bar-9-st', 'label-9hole', h9ev, h9st);
-        }
-
-        function buildMomentumChart(isModal = false) {
-            const chart = document.getElementById(isModal ? 'modal-chart' : 'season-chart');
-            const spreadLabel = document.getElementById('chart-spread-label');
-            const containerHeight = isModal ? 160 : 70;
-            const zeroLine = containerHeight / 2;
-            chart.innerHTML = '<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>';
-            
-            if (allMatches.length < 2) return;
-
-            const chronMatches = [...allMatches].reverse();
-            const history = chronMatches.map(m => (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0));
-
-            if (!isModal) {
-                const finalSpread = history[history.length - 1];
-                spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
-                spreadLabel.className = `text-[9px] font-black italic px-1.5 py-0.5 rounded leading-none ${finalSpread > 0 ? 'bg-blue-600 text-white' : finalSpread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
-            }
-
-            const maxLead = Math.max(...history.map(Math.abs), 5);
-            const stepX = 100 / (history.length - 1);
-
-            history.forEach((lead, i) => {
-                const x = i * stepX;
-                const y = zeroLine - (lead * ((containerHeight / 2 - 20) / maxLead));
-                const dot = document.createElement('div');
-                dot.className = `chart-point ${lead > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : lead < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white'}`;
-                dot.style.left = `${x}%`;
-                dot.style.top = `${y}px`;
-                chart.appendChild(dot);
-
-                if (i < history.length - 1) {
-                    const nextLead = history[i+1];
-                    const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextLead * ((containerHeight / 2 - 20) / maxLead));
-                    const dx = (nextX - x) * (chart.clientWidth / 100);
-                    const dy = nextY - y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                    const line = document.createElement('div');
-                    line.className = 'chart-line bg-white/20';
-                    line.style.width = `${dist}px`;
-                    line.style.left = `${x}%`;
-                    line.style.top = `${y}px`;
-                    line.style.transform = `rotate(${angle}deg)`;
-                    chart.appendChild(line);
-                }
-            });
-        }
-
-        function populateYearMenu() {
-            const menu = document.getElementById('year-menu');
-            menu.innerHTML = '';
-            Array.from(availableYears).sort().reverse().forEach(year => {
-                menu.innerHTML += `<div class="year-item" onclick="changeYear('${year}')">${year}</div>`;
-            });
-        }
-
         async function fetchMatchResults() {
             try {
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
@@ -373,7 +374,16 @@
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
-                buildMomentumChart();
+                
+                // Build the preview sparkline for the main page
+                const chronMatches = [...allMatches].reverse();
+                const history = chronMatches.map(m => (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0));
+                renderSparkline('season-chart', history, 70);
+                
+                const finalSpread = history[history.length - 1];
+                const spreadLabel = document.getElementById('chart-spread-label');
+                spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
+                spreadLabel.className = `text-[9px] font-black italic px-1.5 py-0.5 rounded leading-none ${finalSpread > 0 ? 'bg-blue-600 text-white' : finalSpread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
             } catch (e) { console.error(e); }
         }
 
@@ -433,6 +443,14 @@
             document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
             document.getElementById('filter-status').classList.add('hidden');
             renderMatches();
+        }
+
+        function populateYearMenu() {
+            const menu = document.getElementById('year-menu');
+            menu.innerHTML = '';
+            Array.from(availableYears).sort().reverse().forEach(year => {
+                menu.innerHTML += `<div class="year-item" onclick="changeYear('${year}')">${year}</div>`;
+            });
         }
 
         function refreshData() { fetchOverallDetails(); fetchMatchResults(); }
