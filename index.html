@@ -52,11 +52,20 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
         .chart-container { width: 100%; position: relative; }
-        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
+        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; cursor: pointer; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
 
         /* Major Highlight Styles */
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
+
+        /* Tooltip Styles */
+        .chart-tooltip {
+            position: absolute; background: #0f172a; color: white; padding: 6px 10px; border-radius: 4px;
+            font-size: 10px; font-weight: bold; pointer-events: none; z-index: 100; white-space: nowrap;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+            transform: translate(-50%, -130%); display: none;
+        }
+        .chart-point:hover .chart-tooltip { display: block; }
 
         /* Modal Styles */
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
@@ -75,7 +84,7 @@
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div>
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead <span class="text-amber-400 normal-case ml-2">(🏆 = Major)</span></p>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead</p>
                 <div id="modal-chart-overall" class="chart-container h-40 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
@@ -231,26 +240,25 @@
             document.getElementById('analytics-modal').classList.add('show');
             const chronMatches = [...allMatches].reverse();
             
-            // 1. Overall Points Chart - Use actual Running Total from data
             const pointsHistory = chronMatches.map(m => {
                 return {
                     val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                    isMajor: m[3] && m[3].trim() !== ""
+                    isMajor: m[3] && m[3].trim() !== "",
+                    comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
                 };
             });
             renderSparkline('modal-chart-overall', pointsHistory, 160);
 
-            // 2-4. Categorical Momentum (Starts at 0 for win count diff)
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
-            renderSparkline('modal-chart-par3', p3History.map(v => ({val: v, isMajor: false})), 96);
+            renderSparkline('modal-chart-par3', p3History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
             updateStatLabel('stat-par3', p3History);
 
             const h18History = getCategoricalWinHistory(chronMatches, '18');
-            renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v, isMajor: false})), 96);
+            renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
             updateStatLabel('stat-18hole', h18History);
 
             const h9History = getCategoricalWinHistory(chronMatches, '9');
-            renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v, isMajor: false})), 96);
+            renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
             updateStatLabel('stat-9hole', h9History);
         }
 
@@ -287,30 +295,33 @@
                 return;
             }
 
-            // Get range for scaling
             const vals = dataPoints.map(d => d.val);
-            const maxVal = Math.max(...vals);
-            const minVal = Math.min(...vals);
-            const absMax = Math.max(Math.abs(maxVal), Math.abs(minVal), 1);
-            
+            const absMax = Math.max(Math.max(...vals.map(Math.abs)), 1);
             const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
-                // Scale based on the center (0)
-                const y = zeroLine - (point.val * ((height / 2 - 20) / absMax));
+                const y = zeroLine - (point.val * ((height / 2 - 25) / absMax));
                 
                 const dot = document.createElement('div');
                 const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
                 dot.className = `chart-point ${point.isMajor ? 'major-point' : baseClass}`;
                 dot.style.left = `${x}%`;
                 dot.style.top = `${y}px`;
+
+                if (point.comment) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'chart-tooltip';
+                    tooltip.innerText = point.comment;
+                    dot.appendChild(tooltip);
+                }
+
                 chart.appendChild(dot);
 
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextVal * ((height / 2 - 20) / absMax));
+                    const nextY = zeroLine - (nextVal * ((height / 2 - 25) / absMax));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -391,7 +402,8 @@
                 const pointsHistory = chronMatches.map(m => {
                     return {
                         val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                        isMajor: m[3] && m[3].trim() !== ""
+                        isMajor: m[3] && m[3].trim() !== "",
+                        comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
                     };
                 });
                 renderSparkline('season-chart', pointsHistory, 70);
@@ -412,6 +424,7 @@
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                 const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
+                const commentText = col[22]?.replace(/"/g, '').trim();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
                 
@@ -427,6 +440,7 @@
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
                                 <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span></div>
                             </div>
+                            ${commentText ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">"${commentText}"</div>` : ''}
                         </div>
                     </div>`;
             });
