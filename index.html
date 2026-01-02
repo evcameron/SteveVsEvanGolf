@@ -13,7 +13,7 @@
         .bg-steve-win { background: linear-gradient(to right, #ffffff, #d1fae5); } 
         .bg-draw      { background: radial-gradient(circle, #fef9c3 0%, #ffffff 80%); } 
 
-        .border-dentonia { border-left-color: #94a3b8; }
+        .border-par3     { border-left-color: #94a3b8; }
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
         .border-other    { border-left-color: #cbd5e1; }
@@ -47,24 +47,11 @@
         .year-item:hover { background: rgba(255,255,255,0.1); }
         .year-item:last-child { border-bottom: none; }
 
-        /* Ryder Cup Bar Styles */
         .ryder-bar-container { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; position: relative; }
         .evan-progress-dark  { height: 100%; background: #1d4ed8; transition: width 1s ease-in-out; float: left; }
         .steve-progress-dark  { height: 100%; background: #047857; transition: width 1s ease-in-out; float: right; }
-
-        .evan-progress-light { 
-            height: 100%; 
-            background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 4px, #3b82f6 4px, #3b82f6 8px);
-            transition: width 1s ease-in-out; 
-            float: left; 
-        }
-        .steve-progress-light { 
-            height: 100%; 
-            background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px);
-            transition: width 1s ease-in-out; 
-            float: right; 
-        }
-
+        .evan-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 4px, #3b82f6 4px, #3b82f6 8px); transition: width 1s ease-in-out; float: left; }
+        .steve-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px); transition: width 1s ease-in-out; float: right; }
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
     </style>
 </head>
@@ -289,7 +276,8 @@
                 const evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 
-                let catClass = cat.toLowerCase().includes('dentonia') ? 'border-dentonia' : (cat.includes('18') ? 'border-18hole' : 'border-9hole');
+                let catLower = cat.toLowerCase();
+                let catClass = catLower.includes('par 3 round') ? 'border-par3' : (catLower.includes('18') ? 'border-18hole' : 'border-9hole');
                 
                 container.innerHTML += `
                     <div class="flex flex-col">
