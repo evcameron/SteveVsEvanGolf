@@ -16,6 +16,10 @@
         .border-18hole   { border-left-color: #3b82f6; }
         .border-9hole    { border-left-color: #8b5cf6; }
         
+        /* Restored Major Styles */
+        .major-card { border: 2px solid #fbbf24 !important; border-left-width: 5px !important; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
+        .major-header { background: #fbbf24; color: #78350f; }
+
         .header-bg { background-color: #052e16; } 
         .header-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); color: white; }
         
@@ -235,7 +239,6 @@
             
             if (allMatches.length < 2) return;
 
-            // Chart needs chronological (oldest first), list needs reverse (newest first)
             const chronMatches = [...allMatches].reverse();
             let evCurrent = 0, stCurrent = 0;
             const history = chronMatches.map(m => {
@@ -294,7 +297,6 @@
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-                // Store in reverse (most recent first) for the list
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
