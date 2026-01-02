@@ -52,37 +52,37 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
         .chart-container { width: 100%; position: relative; }
-        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
-        .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; }
+        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; transition: all 0.3s ease; }
+        .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; transition: all 0.3s ease; }
 
         /* Major Highlight Styles */
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
         /* Floating Comment Labels */
         .chart-comment-label {
-            position: absolute;
-            font-size: 8px;
-            font-weight: 900;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: rgba(0,0,0,0.6);
-            padding: 2px 4px;
-            border-radius: 3px;
-            pointer-events: none;
-            white-space: nowrap;
-            z-index: 30;
-            transform: translateX(-50%);
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255,255,255,0.1);
+            position: absolute; font-size: 8px; font-weight: 900; color: white; text-transform: uppercase;
+            letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.85); padding: 2px 5px; border-radius: 4px;
+            pointer-events: none; white-space: nowrap; z-index: 30; transform: translateX(-50%);
+            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         /* Modal Styles */
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
+
+        /* Manage Button */
+        .manage-data-btn {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #0f172a; color: white; border: 1px solid #059669;
+            padding: 10px 20px; border-radius: 99px; font-weight: 900; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 8px; z-index: 40; transition: all 0.2s;
+        }
+        .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-900 text-[13px]">
+<body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24">
 
     <div id="analytics-modal" class="p-6 flex-col overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
@@ -188,7 +188,7 @@
                                 <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Momentum (YTD Pts)</p>
                                 <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
                             </div>
-                            <div id="season-chart" class="chart-container h-[80px]">
+                            <div id="season-chart" class="chart-container h-[90px]">
                                 <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>
                             </div>
                         </div>
@@ -218,6 +218,11 @@
             <p class="text-center py-10 text-slate-400 italic">Accessing Season Records...</p>
         </div>
     </main>
+
+    <a href="https://docs.google.com/spreadsheets/d/16K1M9O3T3tE7_H8A1n89Miz6H8M37N0-fWfHk3791A0/edit" target="_blank" class="manage-data-btn">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+        Manage Data
+    </a>
 
     <script>
         let CONFIG = { WebsiteYear: "2026" };
@@ -249,14 +254,11 @@
         function openModal() {
             document.getElementById('analytics-modal').classList.add('show');
             const chronMatches = [...allMatches].reverse();
-            
-            const pointsHistory = chronMatches.map(m => {
-                return {
-                    val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                    isMajor: m[3] && m[3].trim() !== "",
-                    comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
-                };
-            });
+            const pointsHistory = chronMatches.map(m => ({
+                val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
+                isMajor: m[3] && m[3].trim() !== "",
+                comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
+            }));
             renderSparkline('modal-chart-overall', pointsHistory, 176);
 
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
@@ -311,8 +313,7 @@
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
-                // Leave vertical room for labels (25px padding)
-                const y = zeroLine - (point.val * ((height / 2 - 35) / absMax));
+                const y = zeroLine - (point.val * ((height / 2 - 40) / absMax));
                 
                 const dot = document.createElement('div');
                 const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
@@ -321,18 +322,18 @@
                 dot.style.top = `${y}px`;
                 chart.appendChild(dot);
 
-                // Permanent Comment Labels
                 if (point.comment) {
                     const label = document.createElement('div');
                     label.className = 'chart-comment-label';
                     label.innerText = point.comment;
                     label.style.left = `${x}%`;
                     
-                    // Logic: If point is above center line, put comment below. If below, put above.
+                    // IF point is high (Evan leading), put box below point (y + 12)
+                    // IF point is low (Steve leading), put box further above point (y - 28)
                     if (point.val >= 0) {
-                        label.style.top = `${y + 10}px`;
+                        label.style.top = `${y + 12}px`; 
                     } else {
-                        label.style.top = `${y - 20}px`;
+                        label.style.top = `${y - 28}px`;
                     }
                     chart.appendChild(label);
                 }
@@ -340,7 +341,7 @@
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextVal * ((height / 2 - 35) / absMax));
+                    const nextY = zeroLine - (nextVal * ((height / 2 - 40) / absMax));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -418,14 +419,12 @@
                 updateStats();
                 
                 const chronMatches = [...allMatches].reverse();
-                const pointsHistory = chronMatches.map(m => {
-                    return {
-                        val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                        isMajor: m[3] && m[3].trim() !== "",
-                        comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
-                    };
-                });
-                renderSparkline('season-chart', pointsHistory, 80);
+                const pointsHistory = chronMatches.map(m => ({
+                    val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
+                    isMajor: m[3] && m[3].trim() !== "",
+                    comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
+                }));
+                renderSparkline('season-chart', pointsHistory, 90);
                 
                 const finalSpread = pointsHistory.length > 0 ? pointsHistory[pointsHistory.length - 1].val : 0;
                 const spreadLabel = document.getElementById('chart-spread-label');
