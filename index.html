@@ -61,10 +61,10 @@
         /* Floating Comment Labels */
         .chart-comment-label {
             position: absolute; font-size: 8px; font-weight: 900; color: white; text-transform: uppercase;
-            letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.85); padding: 2px 5px; border-radius: 4px;
+            letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.9); padding: 2px 5px; border-radius: 4px;
             pointer-events: none; white-space: nowrap; z-index: 30; transform: translateX(-50%);
             backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
         }
 
         /* Modal Styles */
@@ -94,7 +94,7 @@
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div>
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points YTD Lead</p>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall YTD Points Lead</p>
                 <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
@@ -185,7 +185,7 @@
                     <div id="breakdown-container" class="collapsed">
                         <div class="mt-4 px-1 cursor-pointer" onclick="openModal()">
                             <div class="flex justify-between items-end mb-1">
-                                <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Season Momentum (YTD Pts)</p>
+                                <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Overall YTD Points Lead</p>
                                 <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
                             </div>
                             <div id="season-chart" class="chart-container h-[90px]">
@@ -300,6 +300,8 @@
         function renderSparkline(containerId, dataPoints, height) {
             const chart = document.getElementById(containerId);
             const zeroLine = height / 2;
+            const PADDING = 15; // Tight padding for maximum zoom effect
+            
             chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
             
             if (dataPoints.length < 1) {
@@ -313,7 +315,8 @@
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
-                const y = zeroLine - (point.val * ((height / 2 - 40) / absMax));
+                // Scale so that the furthest point touches the padding boundary
+                const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
                 
                 const dot = document.createElement('div');
                 const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
@@ -328,20 +331,19 @@
                     label.innerText = point.comment;
                     label.style.left = `${x}%`;
                     
-                    // IF point is high (Evan leading), put box below point (y + 12)
-                    // IF point is low (Steve leading), put box further above point (y - 28)
-                    if (point.val >= 0) {
-                        label.style.top = `${y + 12}px`; 
-                    } else {
-                        label.style.top = `${y - 28}px`;
-                    }
+                    // Logic to prevent label clipping
+                    let topPos = y - 28; // Default to above
+                    if (topPos < 5) { topPos = y + 12; } // Flip to below if hitting top
+                    if (topPos > height - 15) { topPos = y - 28; } // Safety flip back
+
+                    label.style.top = `${topPos}px`;
                     chart.appendChild(label);
                 }
 
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
                     const nextX = (i + 1) * stepX;
-                    const nextY = zeroLine - (nextVal * ((height / 2 - 40) / absMax));
+                    const nextY = zeroLine - (nextVal * ((height / 2 - PADDING) / absMax));
                     const dx = (nextX - x) * (chart.clientWidth / 100);
                     const dy = nextY - y;
                     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -413,6 +415,7 @@
             try {
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
+                // Regex to handle quoted CSV strings properly
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
@@ -422,7 +425,7 @@
                 const pointsHistory = chronMatches.map(m => ({
                     val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
                     isMajor: m[3] && m[3].trim() !== "",
-                    comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
+                    comment: m[22] ? m[22].replace(/"/g, '').trim() : "" // Col W for Sparklines
                 }));
                 renderSparkline('season-chart', pointsHistory, 90);
                 
@@ -442,7 +445,10 @@
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                 const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
-                const commentText = col[22]?.replace(/"/g, '').trim();
+                
+                // Column X (index 23) for Detailed Match Comments
+                const matchComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
+                
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
                 
@@ -458,7 +464,7 @@
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
                                 <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span></div>
                             </div>
-                            ${commentText ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">"${commentText}"</div>` : ''}
+                            ${matchComment ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">"${matchComment}"</div>` : ''}
                         </div>
                     </div>`;
             });
