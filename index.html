@@ -57,7 +57,6 @@
 
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
-        /* Comment Label Styling */
         .chart-comment-label {
             position: absolute; font-size: 8px; font-weight: 900; color: white; text-transform: uppercase;
             letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.95); padding: 2px 6px; border-radius: 4px;
@@ -66,14 +65,7 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
         }
         
-        /* Connector Line */
-        .comment-connector {
-            position: absolute;
-            width: 1px;
-            background: rgba(255,255,255,0.3);
-            z-index: 25;
-            pointer-events: none;
-        }
+        .comment-connector { position: absolute; width: 1px; background: rgba(255,255,255,0.3); z-index: 25; pointer-events: none; }
 
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
@@ -87,27 +79,21 @@
         }
         .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
 
+        /* FADED MILESTONE CARD */
         .milestone-card {
-            background: #1e293b;
-            border-left: 4px solid #3b82f6;
-            padding: 8px 12px;
-            border-radius: 0 8px 8px 0;
-            margin: 12px 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            position: relative;
+            background: rgba(30, 41, 59, 0.05);
+            border-left: 2px solid rgba(59, 130, 246, 0.2);
+            padding: 6px 12px;
+            margin: 8px 0;
+            border-radius: 2px 6px 6px 2px;
         }
-        .milestone-card::before {
-            content: "SEASON HIGHLIGHT";
-            position: absolute;
-            top: -7px;
-            left: 12px;
-            background: #3b82f6;
-            color: white;
-            font-size: 7px;
-            font-weight: 900;
-            padding: 1px 5px;
-            border-radius: 3px;
-            letter-spacing: 0.1em;
+        .milestone-text {
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            font-style: italic;
         }
     </style>
 </head>
@@ -330,7 +316,6 @@
             const chart = document.getElementById(containerId);
             const zeroLine = height / 2;
             const PADDING = 15;
-            
             chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
             
             if (dataPoints.length < 1) {
@@ -343,7 +328,7 @@
             const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
             let lastCommentX = -100;
-            let currentLane = 0; // 0, 1, or 2 to stagger height
+            let currentLane = 0;
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
@@ -362,31 +347,21 @@
                     label.innerText = point.comment;
                     label.style.left = `${x}%`;
                     
-                    // Logic: If this comment is too close to the last one, change lane
-                    if (x - lastCommentX < 18) {
-                        currentLane = (currentLane + 1) % 3;
-                    } else {
-                        currentLane = 0;
-                    }
+                    if (x - lastCommentX < 18) { currentLane = (currentLane + 1) % 3; } else { currentLane = 0; }
                     lastCommentX = x;
 
-                    // Calculate Offset
                     let xOffset = '-50%';
                     if (x < 15) xOffset = '0%';
                     else if (x > 85) xOffset = '-100%';
                     
-                    // Staggering heights based on currentLane
                     let verticalOffset = 25 + (currentLane * 14);
                     let topPos = y - verticalOffset; 
-                    
-                    // Boundary check
                     if (topPos < 5) topPos = y + 12 + (currentLane * 14);
                     
                     label.style.top = `${topPos}px`;
                     label.style.transform = `translateX(${xOffset})`;
                     chart.appendChild(label);
 
-                    // Add a tiny connector line
                     const connector = document.createElement('div');
                     connector.className = 'comment-connector';
                     connector.style.left = `${x}%`;
@@ -426,7 +401,6 @@
                 const rows = data.split(/\r?\n/).map(row => row.split(','));
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
-                
                 let evTotal = 0, stTotal = 0, evMajorPts = 0, stMajorPts = 0, tournamentCount = 0;
 
                 rows.forEach(col => {
@@ -460,13 +434,11 @@
                         if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
                     }
                 });
-
                 const target = 100;
                 document.getElementById('evan-bar-dark').style.width = (evMajorPts / target * 100) + '%';
                 document.getElementById('evan-bar-light').style.width = ((evTotal - evMajorPts) / target * 100) + '%';
                 document.getElementById('steve-bar-dark').style.width = (stMajorPts / target * 100) + '%';
                 document.getElementById('steve-bar-light').style.width = ((stTotal - stMajorPts) / target * 100) + '%';
-
                 populateYearMenu();
             } catch (e) { console.error(e); }
         }
@@ -479,7 +451,6 @@
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
-                
                 const chronMatches = [...allMatches].reverse();
                 const pointsHistory = chronMatches.map(m => ({
                     val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
@@ -487,7 +458,6 @@
                     comment: m[22] ? m[22].replace(/"/g, '').trim() : "" 
                 }));
                 renderSparkline('season-chart', pointsHistory, 90);
-                
                 const finalSpread = pointsHistory.length > 0 ? pointsHistory[pointsHistory.length - 1].val : 0;
                 const spreadLabel = document.getElementById('chart-spread-label');
                 spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
@@ -504,38 +474,31 @@
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                 const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
-                
                 const sparkComment = col[22] ? col[22].replace(/"/g, '').trim() : "";
                 const matchComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
-                
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
                 
                 let html = `<div class="flex flex-col">`;
-                
                 if (sparkComment) {
-                    html += `<div class="milestone-card"><p class="text-white text-[11px] font-bold italic">"${sparkComment}"</p></div>`;
+                    html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
                 }
-
                 if (maj) {
                     html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
                 }
-
                 html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
-                            
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span></div>
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
                                 <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span></div>
                             </div>
-                            ${matchComment ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">"${matchComment}"</div>` : ''}
+                            ${matchComment ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">${matchComment}</div>` : ''}
                         </div>
                     </div>`;
-                
                 container.innerHTML += html;
             });
         }
