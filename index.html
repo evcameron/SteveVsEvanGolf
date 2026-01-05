@@ -54,18 +54,14 @@
         .chart-container { width: 100%; position: relative; overflow: visible; }
         .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; transition: all 0.3s ease; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; transition: all 0.3s ease; }
-
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
-        .chart-comment-label {
-            position: absolute; font-size: 8px; font-weight: 900; color: white; text-transform: uppercase;
-            letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.95); padding: 2px 6px; border-radius: 4px;
-            pointer-events: none; white-space: nowrap; z-index: 30;
-            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.25); transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
-        }
-        
-        .comment-connector { position: absolute; width: 1px; background: rgba(255,255,255,0.3); z-index: 25; pointer-events: none; }
+        /* Timeline Styling for Modal */
+        .timeline-scroll { display: flex; overflow-x: auto; gap: 12px; padding: 12px 4px; scrollbar-width: none; -ms-overflow-style: none; }
+        .timeline-scroll::-webkit-scrollbar { display: none; }
+        .timeline-item { flex: 0 0 auto; background: rgba(255,255,255,0.05); border-left: 2px solid #3b82f6; padding: 6px 10px; border-radius: 4px; max-width: 140px; }
+        .timeline-comment { color: rgba(255,255,255,0.9); font-size: 9px; font-weight: 800; text-transform: uppercase; line-height: 1.2; italic; }
+        .timeline-meta { color: rgba(255,255,255,0.4); font-size: 7px; font-weight: 900; margin-top: 4px; letter-spacing: 0.05em; }
 
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
@@ -79,7 +75,6 @@
         }
         .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
 
-        /* FADED MILESTONE CARD */
         .milestone-card {
             background: rgba(30, 41, 59, 0.05);
             border-left: 2px solid rgba(59, 130, 246, 0.2);
@@ -87,14 +82,7 @@
             margin: 8px 0;
             border-radius: 2px 6px 6px 2px;
         }
-        .milestone-text {
-            color: #64748b;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-            font-style: italic;
-        }
+        .milestone-text { color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; font-style: italic; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24">
@@ -109,8 +97,9 @@
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div>
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall YTD Points Lead</p>
-                <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg"></div>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative</p>
+                <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg mb-2"></div>
+                <div id="modal-timeline" class="timeline-scroll"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
                     <span>Current Day</span>
@@ -119,19 +108,16 @@
 
             <div class="grid gap-6 pt-4 border-t border-white/10">
                 <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase">Win Momentum by Type</p>
-                
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>Par 3 Win Lead</span><span id="stat-par3">--</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>Par 3 Lead</span><span id="stat-par3">--</span></div>
                     <div id="modal-chart-par3" class="chart-container h-24 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 </div>
-
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>18 Hole Win Lead</span><span id="stat-18hole">--</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>18 Hole Lead</span><span id="stat-18hole">--</span></div>
                     <div id="modal-chart-18hole" class="chart-container h-24 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 </div>
-
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>9 Hole Win Lead</span><span id="stat-9hole">--</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-white mb-2 uppercase opacity-80"><span>9 Hole Lead</span><span id="stat-9hole">--</span></div>
                     <div id="modal-chart-9hole" class="chart-container h-24 border-b border-white/5 bg-white/5 rounded-lg"></div>
                 </div>
             </div>
@@ -272,20 +258,37 @@
             const pointsHistory = chronMatches.map(m => ({
                 val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
                 isMajor: m[3] && m[3].trim() !== "",
-                comment: m[22] ? m[22].replace(/"/g, '').trim() : ""
+                comment: m[22] ? m[22].replace(/"/g, '').trim() : "",
+                date: m[1] || ""
             }));
-            renderSparkline('modal-chart-overall', pointsHistory, 176);
+            
+            // Render modal chart WITHOUT labels
+            renderSparkline('modal-chart-overall', pointsHistory, 176, false);
+            
+            // Build the horizontal timeline below it
+            const timeline = document.getElementById('modal-timeline');
+            timeline.innerHTML = '';
+            pointsHistory.forEach(p => {
+                if (p.comment) {
+                    timeline.innerHTML += `
+                        <div class="timeline-item">
+                            <div class="timeline-comment">${p.comment}</div>
+                            <div class="timeline-meta">${p.date} • ${p.val > 0 ? 'Evan' : (p.val < 0 ? 'Steve' : 'Even')} +${Math.abs(p.val)}</div>
+                        </div>
+                    `;
+                }
+            });
 
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
-            renderSparkline('modal-chart-par3', p3History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
+            renderSparkline('modal-chart-par3', p3History.map(v => ({val: v})), 96, false);
             updateStatLabel('stat-par3', p3History);
 
             const h18History = getCategoricalWinHistory(chronMatches, '18');
-            renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
+            renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v})), 96, false);
             updateStatLabel('stat-18hole', h18History);
 
             const h9History = getCategoricalWinHistory(chronMatches, '9');
-            renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v, isMajor: false, comment: ""})), 96);
+            renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v})), 96, false);
             updateStatLabel('stat-9hole', h9History);
         }
 
@@ -312,7 +315,7 @@
 
         function closeModal() { document.getElementById('analytics-modal').classList.remove('show'); }
 
-        function renderSparkline(containerId, dataPoints, height) {
+        function renderSparkline(containerId, dataPoints, height, showLabels) {
             const chart = document.getElementById(containerId);
             const zeroLine = height / 2;
             const PADDING = 15;
@@ -327,9 +330,6 @@
             const absMax = Math.max(Math.max(...vals.map(Math.abs)), 1);
             const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
-            let lastCommentX = -100;
-            let currentLane = 0;
-
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
@@ -340,40 +340,6 @@
                 dot.style.left = `${x}%`;
                 dot.style.top = `${y}px`;
                 chart.appendChild(dot);
-
-                if (point.comment) {
-                    const label = document.createElement('div');
-                    label.className = 'chart-comment-label';
-                    label.innerText = point.comment;
-                    label.style.left = `${x}%`;
-                    
-                    if (x - lastCommentX < 18) { currentLane = (currentLane + 1) % 3; } else { currentLane = 0; }
-                    lastCommentX = x;
-
-                    let xOffset = '-50%';
-                    if (x < 15) xOffset = '0%';
-                    else if (x > 85) xOffset = '-100%';
-                    
-                    let verticalOffset = 25 + (currentLane * 14);
-                    let topPos = y - verticalOffset; 
-                    if (topPos < 5) topPos = y + 12 + (currentLane * 14);
-                    
-                    label.style.top = `${topPos}px`;
-                    label.style.transform = `translateX(${xOffset})`;
-                    chart.appendChild(label);
-
-                    const connector = document.createElement('div');
-                    connector.className = 'comment-connector';
-                    connector.style.left = `${x}%`;
-                    if (topPos < y) {
-                        connector.style.top = `${topPos + 12}px`;
-                        connector.style.height = `${y - (topPos + 12)}px`;
-                    } else {
-                        connector.style.top = `${y}px`;
-                        connector.style.height = `${topPos - y}px`;
-                    }
-                    chart.appendChild(connector);
-                }
 
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
@@ -402,19 +368,16 @@
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
                 let evTotal = 0, stTotal = 0, evMajorPts = 0, stMajorPts = 0, tournamentCount = 0;
-
                 rows.forEach(col => {
                     const rowYear = col[5]?.replace(/"/g, '').trim(); 
                     if (rowYear && rowYear !== "Year") availableYears.add(rowYear);
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
-
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
                     const isMajor = type.includes('major');
                     const evPts = parseFloat(col[6]?.replace(/"/g, '').trim()) || 0;
                     const stPts = parseFloat(col[7]?.replace(/"/g, '').trim()) || 0;
                     const evWins = col[8]?.replace(/"/g, '').trim(), stWins = col[9]?.replace(/"/g, '').trim();
-
                     if (label.toLowerCase() === 'total') {
                         evTotal = evPts; stTotal = stPts;
                         document.getElementById('evan-points').innerText = evTotal;
@@ -457,7 +420,7 @@
                     isMajor: m[3] && m[3].trim() !== "",
                     comment: m[22] ? m[22].replace(/"/g, '').trim() : "" 
                 }));
-                renderSparkline('season-chart', pointsHistory, 90);
+                renderSparkline('season-chart', pointsHistory, 90, false);
                 const finalSpread = pointsHistory.length > 0 ? pointsHistory[pointsHistory.length - 1].val : 0;
                 const spreadLabel = document.getElementById('chart-spread-label');
                 spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
@@ -470,7 +433,6 @@
             container.innerHTML = '';
             const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[3]?.trim() === activeFilter) : allMatches;
             if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found.</p>`; return; }
-
             filtered.forEach(col => {
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                 const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
@@ -478,14 +440,9 @@
                 const matchComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
-                
                 let html = `<div class="flex flex-col">`;
-                if (sparkComment) {
-                    html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
-                }
-                if (maj) {
-                    html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
-                }
+                if (sparkComment) html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
+                if (maj) html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
                 html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
