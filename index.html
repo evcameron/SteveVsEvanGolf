@@ -52,15 +52,23 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
         .chart-container { width: 100%; position: relative; overflow: visible; }
-        .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; transition: all 0.3s ease; }
+        .chart-point { position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; transition: all 0.3s ease; cursor: pointer; }
+        .chart-point:hover { scale: 1.5; z-index: 40; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; transition: all 0.3s ease; }
-        .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
+        .major-point { width: 12px; height: 12px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
-        .timeline-scroll { display: flex; overflow-x: auto; gap: 12px; padding: 12px 4px; scrollbar-width: none; -ms-overflow-style: none; }
-        .timeline-scroll::-webkit-scrollbar { display: none; }
-        .timeline-item { flex: 0 0 auto; background: rgba(255,255,255,0.05); border-left: 2px solid #3b82f6; padding: 6px 10px; border-radius: 4px; max-width: 140px; }
-        .timeline-comment { color: rgba(255,255,255,0.9); font-size: 9px; font-weight: 800; text-transform: uppercase; line-height: 1.2; font-style: italic; }
-        .timeline-meta { color: rgba(255,255,255,0.4); font-size: 7px; font-weight: 900; margin-top: 4px; letter-spacing: 0.05em; }
+        /* Y-Axis Scale Styling */
+        .chart-guide-line { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.05); pointer-events: none; }
+        .chart-guide-label { position: absolute; right: 4px; font-size: 7px; font-weight: 900; color: rgba(255,255,255,0.15); text-transform: uppercase; transform: translateY(-50%); pointer-events: none; }
+        .zero-guide-line { background: rgba(255,255,255,0.15) !important; }
+
+        /* POPUP FOR POINT DETAILS */
+        #point-popup { 
+            position: absolute; display: none; background: rgba(15, 23, 42, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
+            padding: 10px; border-radius: 8px; z-index: 60; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            width: 160px; pointer-events: none;
+        }
 
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
@@ -86,6 +94,15 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24">
 
+    <div id="point-popup">
+        <p id="popup-date" class="text-[7px] font-black text-white/40 uppercase tracking-widest mb-1"></p>
+        <p id="popup-comment" class="text-[10px] font-black text-white italic uppercase leading-tight mb-2"></p>
+        <div class="flex justify-between items-center border-t border-white/10 pt-1.5">
+            <span class="text-[8px] font-bold text-white/60 uppercase">Spread</span>
+            <span id="popup-spread" class="text-[9px] font-black px-1.5 py-0.5 rounded italic"></span>
+        </div>
+    </div>
+
     <div id="analytics-modal" class="p-6 flex-col overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-white text-xl font-black uppercase italic tracking-tighter">Season Deep Dive</h2>
@@ -95,10 +112,9 @@
         </div>
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
-            <div>
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative</p>
+            <div class="relative">
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative <span class="text-white/20 italic lowercase tracking-normal ml-2">(tap points for details)</span></p>
                 <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg mb-2"></div>
-                <div id="modal-timeline" class="timeline-scroll"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
                     <span>Current Day</span>
@@ -188,9 +204,7 @@
                                 <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Overall YTD Points Lead</p>
                                 <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
                             </div>
-                            <div id="season-chart" class="chart-container h-[90px]">
-                                <div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>
-                            </div>
+                            <div id="season-chart" class="chart-container h-[90px]"></div>
                         </div>
 
                         <div class="pt-3 mb-2 flex text-[7px] uppercase font-black opacity-30 border-b border-white/5 pb-1 text-white">
@@ -234,7 +248,10 @@
         let activeFilter = null;
 
         function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
-        window.onclick = () => document.getElementById('year-menu').classList.remove('show');
+        window.onclick = () => {
+            document.getElementById('year-menu').classList.remove('show');
+            document.getElementById('point-popup').style.display = 'none';
+        }
 
         function changeYear(year) {
             CONFIG.WebsiteYear = year;
@@ -258,23 +275,11 @@
                 val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
                 isMajor: m[3] && m[3].trim() !== "",
                 comment: m[22] ? m[22].replace(/"/g, '').trim() : "",
-                date: m[1] || ""
+                date: m[1] || "",
+                course: m[4] || ""
             }));
             
-            renderSparkline('modal-chart-overall', pointsHistory, 176, false);
-            
-            const timeline = document.getElementById('modal-timeline');
-            timeline.innerHTML = '';
-            pointsHistory.forEach(p => {
-                if (p.comment) {
-                    timeline.innerHTML += `
-                        <div class="timeline-item">
-                            <div class="timeline-comment">${p.comment}</div>
-                            <div class="timeline-meta">${p.date} • ${p.val > 0 ? 'Evan' : (p.val < 0 ? 'Steve' : 'Even')} +${Math.abs(p.val)}</div>
-                        </div>
-                    `;
-                }
-            });
+            renderSparkline('modal-chart-overall', pointsHistory, 176, true);
 
             const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
             renderSparkline('modal-chart-par3', p3History.map(v => ({val: v})), 96, false);
@@ -312,11 +317,35 @@
 
         function closeModal() { document.getElementById('analytics-modal').classList.remove('show'); }
 
-        function renderSparkline(containerId, dataPoints, height, showLabels) {
+        function showPointPopup(e, point) {
+            e.stopPropagation();
+            const popup = document.getElementById('point-popup');
+            const dateEl = document.getElementById('popup-date');
+            const commentEl = document.getElementById('popup-comment');
+            const spreadEl = document.getElementById('popup-spread');
+
+            dateEl.innerText = `${point.date} • ${point.course}`;
+            commentEl.innerText = point.comment || "Regular Round Played";
+            
+            const spread = point.val;
+            spreadEl.innerText = spread > 0 ? `Evan +${spread}` : spread < 0 ? `Steve +${Math.abs(spread)}` : `Even`;
+            spreadEl.className = `text-[9px] font-black px-1.5 py-0.5 rounded italic ${spread > 0 ? 'bg-blue-600 text-white' : spread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
+
+            popup.style.display = 'block';
+            
+            let left = e.pageX + 10;
+            let top = e.pageY - 40;
+            if (left + 160 > window.innerWidth) left = e.pageX - 170;
+            
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+        }
+
+        function renderSparkline(containerId, dataPoints, height, interactive) {
             const chart = document.getElementById(containerId);
             const zeroLine = height / 2;
-            const PADDING = 15;
-            chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
+            const PADDING = 20;
+            chart.innerHTML = '';
             
             if (dataPoints.length < 1) {
                 chart.innerHTML += `<div class="flex items-center justify-center h-full text-white/20 text-[10px] uppercase font-bold">Waiting for Rounds...</div>`;
@@ -327,6 +356,28 @@
             const absMax = Math.max(Math.max(...vals.map(Math.abs)), 1);
             const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
+            // DRAW Y-AXIS SCALE
+            const drawScaleLine = (val, label) => {
+                const yPos = zeroLine - (val * ((height / 2 - PADDING) / absMax));
+                const line = document.createElement('div');
+                line.className = `chart-guide-line ${val === 0 ? 'zero-guide-line' : ''}`;
+                line.style.top = `${yPos}px`;
+                chart.appendChild(line);
+                
+                if (label) {
+                    const lbl = document.createElement('div');
+                    lbl.className = 'chart-guide-label';
+                    lbl.style.top = `${yPos}px`;
+                    lbl.innerText = label;
+                    chart.appendChild(lbl);
+                }
+            };
+
+            drawScaleLine(absMax, `+${absMax}`);
+            drawScaleLine(0, 'Even');
+            drawScaleLine(-absMax, `-${absMax}`);
+
+            // DRAW POINTS AND LINES
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
@@ -336,6 +387,11 @@
                 dot.className = `chart-point ${point.isMajor ? 'major-point' : baseClass}`;
                 dot.style.left = `${x}%`;
                 dot.style.top = `${y}px`;
+                
+                if (interactive) {
+                    dot.onclick = (e) => showPointPopup(e, point);
+                }
+                
                 chart.appendChild(dot);
 
                 if (i < dataPoints.length - 1) {
