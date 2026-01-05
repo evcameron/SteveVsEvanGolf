@@ -51,27 +51,23 @@
         .steve-progress-light { height: 100%; background: repeating-linear-gradient(45deg, #34d399, #34d399 4px, #10b981 4px, #10b981 8px); transition: width 1s ease-in-out; float: right; }
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
-        .chart-container { width: 100%; position: relative; }
+        .chart-container { width: 100%; position: relative; overflow: visible; }
         .chart-point { position: absolute; width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; transition: all 0.3s ease; }
         .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; transition: all 0.3s ease; }
 
-        /* Major Highlight Styles */
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
-        /* Floating Comment Labels */
         .chart-comment-label {
             position: absolute; font-size: 8px; font-weight: 900; color: white; text-transform: uppercase;
             letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.9); padding: 2px 5px; border-radius: 4px;
-            pointer-events: none; white-space: nowrap; z-index: 30; transform: translateX(-50%);
+            pointer-events: none; white-space: nowrap; z-index: 30;
             backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
         }
 
-        /* Modal Styles */
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
         #analytics-modal.show { display: flex; }
 
-        /* Manage Button */
         .manage-data-btn {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: #0f172a; color: white; border: 1px solid #059669;
@@ -80,6 +76,8 @@
             display: flex; align-items: center; gap: 8px; z-index: 40; transition: all 0.2s;
         }
         .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
+
+        .spark-tag { display: inline-block; background: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; border-left: 3px solid #60a5fa; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24">
@@ -300,7 +298,7 @@
         function renderSparkline(containerId, dataPoints, height) {
             const chart = document.getElementById(containerId);
             const zeroLine = height / 2;
-            const PADDING = 15; // Tight padding for maximum zoom effect
+            const PADDING = 15;
             
             chart.innerHTML = `<div class="absolute top-1/2 left-0 w-full h-[1px] bg-white/10"></div>`;
             
@@ -315,7 +313,6 @@
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
-                // Scale so that the furthest point touches the padding boundary
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
                 
                 const dot = document.createElement('div');
@@ -331,12 +328,17 @@
                     label.innerText = point.comment;
                     label.style.left = `${x}%`;
                     
-                    // Logic to prevent label clipping
-                    let topPos = y - 28; // Default to above
-                    if (topPos < 5) { topPos = y + 12; } // Flip to below if hitting top
-                    if (topPos > height - 15) { topPos = y - 28; } // Safety flip back
+                    // Intelligent Alignment to prevent cut-off
+                    let xOffset = '-50%';
+                    if (x < 15) xOffset = '0%';
+                    else if (x > 85) xOffset = '-100%';
+                    
+                    let topPos = y - 28; 
+                    if (topPos < 5) topPos = y + 12;
+                    if (topPos > height - 15) topPos = y - 28;
 
                     label.style.top = `${topPos}px`;
+                    label.style.transform = `translateX(${xOffset})`;
                     chart.appendChild(label);
                 }
 
@@ -415,7 +417,6 @@
             try {
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
-                // Regex to handle quoted CSV strings properly
                 const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
                 allMatches = rows.slice(1).reverse().filter(col => col[0]?.replace(/"/g, '').trim() === CONFIG.WebsiteYear);
                 renderMatches();
@@ -425,7 +426,7 @@
                 const pointsHistory = chronMatches.map(m => ({
                     val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
                     isMajor: m[3] && m[3].trim() !== "",
-                    comment: m[22] ? m[22].replace(/"/g, '').trim() : "" // Col W for Sparklines
+                    comment: m[22] ? m[22].replace(/"/g, '').trim() : "" 
                 }));
                 renderSparkline('season-chart', pointsHistory, 90);
                 
@@ -446,7 +447,7 @@
                 const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
                 const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
                 
-                // Column X (index 23) for Detailed Match Comments
+                const sparkComment = col[22] ? col[22].replace(/"/g, '').trim() : "";
                 const matchComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
                 
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
@@ -459,6 +460,9 @@
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
+                            
+                            ${sparkComment ? `<div><span class="spark-tag">${sparkComment}</span></div>` : ''}
+
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span></div>
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
@@ -512,4 +516,3 @@
     </script>
 </body>
 </html>
-
