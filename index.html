@@ -57,12 +57,22 @@
 
         .major-point { width: 10px; height: 10px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
 
+        /* Comment Label Styling */
         .chart-comment-label {
             position: absolute; font-size: 8px; font-weight: 900; color: white; text-transform: uppercase;
-            letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.9); padding: 2px 5px; border-radius: 4px;
+            letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.95); padding: 2px 6px; border-radius: 4px;
             pointer-events: none; white-space: nowrap; z-index: 30;
-            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;
+            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.25); transition: all 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
+        }
+        
+        /* Connector Line */
+        .comment-connector {
+            position: absolute;
+            width: 1px;
+            background: rgba(255,255,255,0.3);
+            z-index: 25;
+            pointer-events: none;
         }
 
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
@@ -77,7 +87,6 @@
         }
         .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
 
-        /* STANDALONE MILESTONE CARD */
         .milestone-card {
             background: #1e293b;
             border-left: 4px solid #3b82f6;
@@ -333,6 +342,9 @@
             const absMax = Math.max(Math.max(...vals.map(Math.abs)), 1);
             const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
+            let lastCommentX = -100;
+            let currentLane = 0; // 0, 1, or 2 to stagger height
+
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
@@ -350,17 +362,42 @@
                     label.innerText = point.comment;
                     label.style.left = `${x}%`;
                     
+                    // Logic: If this comment is too close to the last one, change lane
+                    if (x - lastCommentX < 18) {
+                        currentLane = (currentLane + 1) % 3;
+                    } else {
+                        currentLane = 0;
+                    }
+                    lastCommentX = x;
+
+                    // Calculate Offset
                     let xOffset = '-50%';
                     if (x < 15) xOffset = '0%';
                     else if (x > 85) xOffset = '-100%';
                     
-                    let topPos = y - 28; 
-                    if (topPos < 5) topPos = y + 12;
-                    if (topPos > height - 15) topPos = y - 28;
-
+                    // Staggering heights based on currentLane
+                    let verticalOffset = 25 + (currentLane * 14);
+                    let topPos = y - verticalOffset; 
+                    
+                    // Boundary check
+                    if (topPos < 5) topPos = y + 12 + (currentLane * 14);
+                    
                     label.style.top = `${topPos}px`;
                     label.style.transform = `translateX(${xOffset})`;
                     chart.appendChild(label);
+
+                    // Add a tiny connector line
+                    const connector = document.createElement('div');
+                    connector.className = 'comment-connector';
+                    connector.style.left = `${x}%`;
+                    if (topPos < y) {
+                        connector.style.top = `${topPos + 12}px`;
+                        connector.style.height = `${y - (topPos + 12)}px`;
+                    } else {
+                        connector.style.top = `${y}px`;
+                        connector.style.height = `${topPos - y}px`;
+                    }
+                    chart.appendChild(connector);
                 }
 
                 if (i < dataPoints.length - 1) {
@@ -476,19 +513,14 @@
                 
                 let html = `<div class="flex flex-col">`;
                 
-                // Standalone Milestone Card (Between matches)
                 if (sparkComment) {
-                    html += `<div class="milestone-card">
-                        <p class="text-white text-[11px] font-bold italic">"${sparkComment}"</p>
-                    </div>`;
+                    html += `<div class="milestone-card"><p class="text-white text-[11px] font-bold italic">"${sparkComment}"</p></div>`;
                 }
 
-                // Major Trophy Header
                 if (maj) {
                     html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
                 }
 
-                // Standard Match Card
                 html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
