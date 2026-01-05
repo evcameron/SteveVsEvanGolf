@@ -77,7 +77,29 @@
         }
         .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
 
-        .spark-tag { display: inline-block; background: #0f172a; color: white; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; border-left: 3px solid #60a5fa; }
+        /* STANDALONE MILESTONE CARD */
+        .milestone-card {
+            background: #1e293b;
+            border-left: 4px solid #3b82f6;
+            padding: 8px 12px;
+            border-radius: 0 8px 8px 0;
+            margin: 12px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .milestone-card::before {
+            content: "SEASON HIGHLIGHT";
+            position: absolute;
+            top: -7px;
+            left: 12px;
+            background: #3b82f6;
+            color: white;
+            font-size: 7px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 3px;
+            letter-spacing: 0.1em;
+        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24">
@@ -328,7 +350,6 @@
                     label.innerText = point.comment;
                     label.style.left = `${x}%`;
                     
-                    // Intelligent Alignment to prevent cut-off
                     let xOffset = '-50%';
                     if (x < 15) xOffset = '0%';
                     else if (x > 85) xOffset = '-100%';
@@ -453,16 +474,27 @@
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
                 
-                container.innerHTML += `<div class="flex flex-col">
-                        ${maj ? `<div class="flex justify-start pl-4"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>` : ''}
-                        <div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
+                let html = `<div class="flex flex-col">`;
+                
+                // Standalone Milestone Card (Between matches)
+                if (sparkComment) {
+                    html += `<div class="milestone-card">
+                        <p class="text-white text-[11px] font-bold italic">"${sparkComment}"</p>
+                    </div>`;
+                }
+
+                // Major Trophy Header
+                if (maj) {
+                    html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
+                }
+
+                // Standard Match Card
+                html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
                             
-                            ${sparkComment ? `<div><span class="spark-tag">${sparkComment}</span></div>` : ''}
-
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span></div>
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
@@ -471,6 +503,8 @@
                             ${matchComment ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">"${matchComment}"</div>` : ''}
                         </div>
                     </div>`;
+                
+                container.innerHTML += html;
             });
         }
 
