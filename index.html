@@ -52,22 +52,20 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
         .chart-container { width: 100%; position: relative; overflow: visible; }
-        .chart-point { position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; transition: all 0.3s ease; cursor: pointer; }
-        .chart-point:hover { scale: 1.5; z-index: 40; }
-        .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; transition: all 0.3s ease; }
-        .major-point { width: 12px; height: 12px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8); z-index: 20; border-radius: 50%; }
+        .chart-point { position: absolute; width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 50; transition: all 0.2s ease; cursor: pointer; pointer-events: auto; }
+        .chart-point:hover { scale: 1.4; filter: brightness(1.2); }
+        .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; pointer-events: none; }
+        .major-point { width: 16px; height: 16px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 12px rgba(251, 191, 36, 0.8); z-index: 60; border-radius: 50%; }
 
-        /* Y-Axis Scale Styling */
         .chart-guide-line { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.05); pointer-events: none; }
         .chart-guide-label { position: absolute; right: 4px; font-size: 7px; font-weight: 900; color: rgba(255,255,255,0.15); text-transform: uppercase; transform: translateY(-50%); pointer-events: none; }
         .zero-guide-line { background: rgba(255,255,255,0.15) !important; }
 
-        /* POPUP FOR POINT DETAILS */
         #point-popup { 
-            position: absolute; display: none; background: rgba(15, 23, 42, 0.95); 
-            border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
-            padding: 10px; border-radius: 8px; z-index: 60; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
-            width: 160px; pointer-events: none;
+            position: fixed; display: none; background: rgba(15, 23, 42, 0.98); 
+            border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(12px);
+            padding: 12px; border-radius: 8px; z-index: 200; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
+            width: 180px; pointer-events: none;
         }
 
         #analytics-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(5, 46, 22, 0.98); backdrop-filter: blur(15px); }
@@ -80,19 +78,16 @@
             text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
             display: flex; align-items: center; gap: 8px; z-index: 40; transition: all 0.2s;
         }
-        .manage-data-btn:hover { background: #1e293b; transform: translateX(-50%) translateY(-2px); }
 
         .milestone-card {
             background: rgba(30, 41, 59, 0.05);
             border-left: 2px solid rgba(59, 130, 246, 0.2);
-            padding: 6px 12px;
-            margin: 8px 0;
-            border-radius: 2px 6px 6px 2px;
+            padding: 6px 12px; margin: 8px 0; border-radius: 2px 6px 6px 2px;
         }
         .milestone-text { color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; font-style: italic; }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24">
+<body class="bg-slate-100 font-sans text-slate-900 text-[13px] pb-24" onclick="closePopup()">
 
     <div id="point-popup">
         <p id="popup-date" class="text-[7px] font-black text-white/40 uppercase tracking-widest mb-1"></p>
@@ -113,7 +108,7 @@
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div class="relative">
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative <span class="text-white/20 italic lowercase tracking-normal ml-2">(tap points for details)</span></p>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative <span class="text-white/20 italic lowercase tracking-normal ml-2">(Tap dots for details)</span></p>
                 <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg mb-2"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
@@ -202,7 +197,6 @@
                         <div class="mt-4 px-1 cursor-pointer" onclick="openModal()">
                             <div class="flex justify-between items-end mb-1">
                                 <p class="text-[8px] font-black opacity-30 text-white tracking-widest uppercase">Overall YTD Points Lead</p>
-                                <p id="chart-spread-label" class="text-[9px] font-black text-white italic bg-white/10 px-1.5 py-0.5 rounded leading-none">--</p>
                             </div>
                             <div id="season-chart" class="chart-container h-[90px]"></div>
                         </div>
@@ -248,7 +242,7 @@
         let activeFilter = null;
 
         function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
-        window.onclick = () => {
+        function closePopup() { 
             document.getElementById('year-menu').classList.remove('show');
             document.getElementById('point-popup').style.display = 'none';
         }
@@ -333,9 +327,9 @@
 
             popup.style.display = 'block';
             
-            let left = e.pageX + 10;
-            let top = e.pageY - 40;
-            if (left + 160 > window.innerWidth) left = e.pageX - 170;
+            let left = e.clientX + 10;
+            let top = e.clientY - 40;
+            if (left + 180 > window.innerWidth) left = e.clientX - 190;
             
             popup.style.left = `${left}px`;
             popup.style.top = `${top}px`;
@@ -356,7 +350,6 @@
             const absMax = Math.max(Math.max(...vals.map(Math.abs)), 1);
             const stepX = dataPoints.length > 1 ? 100 / (dataPoints.length - 1) : 50;
 
-            // DRAW Y-AXIS SCALE
             const drawScaleLine = (val, label) => {
                 const yPos = zeroLine - (val * ((height / 2 - PADDING) / absMax));
                 const line = document.createElement('div');
@@ -377,7 +370,6 @@
             drawScaleLine(0, 'Even');
             drawScaleLine(-absMax, `-${absMax}`);
 
-            // DRAW POINTS AND LINES
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
@@ -389,7 +381,7 @@
                 dot.style.top = `${y}px`;
                 
                 if (interactive) {
-                    dot.onclick = (e) => showPointPopup(e, point);
+                    dot.addEventListener('click', (e) => showPointPopup(e, point));
                 }
                 
                 chart.appendChild(dot);
@@ -474,10 +466,6 @@
                     comment: m[22] ? m[22].replace(/"/g, '').trim() : "" 
                 }));
                 renderSparkline('season-chart', pointsHistory, 90, false);
-                const finalSpread = pointsHistory.length > 0 ? pointsHistory[pointsHistory.length - 1].val : 0;
-                const spreadLabel = document.getElementById('chart-spread-label');
-                spreadLabel.innerText = finalSpread > 0 ? `Evan +${finalSpread}` : finalSpread < 0 ? `Steve +${Math.abs(finalSpread)}` : `Even`;
-                spreadLabel.className = `text-[9px] font-black italic px-1.5 py-0.5 rounded leading-none ${finalSpread > 0 ? 'bg-blue-600 text-white' : finalSpread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
             } catch (e) { console.error(e); }
         }
 
