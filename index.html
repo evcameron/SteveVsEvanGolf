@@ -269,7 +269,7 @@
             
             const pointsHistory = chronMatches.map(m => ({
                 val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                isMajor: m[3] && m[3].trim() !== "",
+                isMajor: isMajorRound(m[3]),
                 comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
                 date: m[1] || "",
                 course: m[4] || "",
@@ -290,11 +290,17 @@
             updateStatLabel('stat-9hole', h9History.map(h => h.val));
         }
 
+        function isMajorRound(colVal) {
+            if (!colVal) return false;
+            const clean = colVal.replace(/"/g, '').trim();
+            return clean !== "" && clean.length > 0;
+        }
+
         function getAlignedHistory(matches, keyword) {
             let runningDiff = 0;
             return matches.map(m => {
                 const cat = m[2].toLowerCase();
-                const isMajor = m[3] && m[3].trim() !== "";
+                const isMajor = isMajorRound(m[3]);
                 let isMatch = false;
 
                 if (keyword === '9') {
@@ -305,9 +311,9 @@
 
                 if (isMatch) {
                     const winner = m[9].toLowerCase();
-                    const ptValue = isMajor ? 5 : 1; // Basic increment for category sparklines
-                    if (winner.includes('evan')) runningDiff += ptValue;
-                    else if (winner.includes('steve')) runningDiff -= ptValue;
+                    // In sub-charts, everything is worth 1 win point
+                    if (winner.includes('evan')) runningDiff += 1;
+                    else if (winner.includes('steve')) runningDiff -= 1;
                 }
                 
                 return {
@@ -475,7 +481,7 @@
                 const chronMatches = [...allMatches].reverse();
                 const pointsHistory = chronMatches.map(m => ({
                     val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                    isMajor: m[3] && m[3].trim() !== "",
+                    isMajor: isMajorRound(m[3]),
                     comment: m[23] ? m[23].replace(/"/g, '').trim() : "" 
                 }));
                 renderSparkline('season-chart', pointsHistory, 90, false, true);
@@ -496,8 +502,8 @@
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
                 let html = `<div class="flex flex-col">`;
                 if (sparkComment) html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
-                if (maj) html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
-                html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${maj ? 'major-card' : ''}">
+                if (isMajorRound(maj)) html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
+                html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${isMajorRound(maj) ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
