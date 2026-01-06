@@ -56,7 +56,6 @@
         .chart-point:hover { scale: 1.4; filter: brightness(1.2); }
         .chart-line { position: absolute; height: 1.5px; transform-origin: left center; z-index: 5; pointer-events: none; }
         
-        /* Subtle Major Mark: Gold Ring */
         .major-point-ring { box-shadow: 0 0 0 2px #fbbf24, 0 0 10px rgba(251, 191, 36, 0.4); z-index: 60; }
 
         .chart-guide-line { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.05); pointer-events: none; }
@@ -110,7 +109,7 @@
 
         <div class="space-y-8 max-w-sm mx-auto w-full pb-10">
             <div class="relative">
-                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative <span class="text-white/20 italic lowercase tracking-normal ml-2">(Tap dots for details)</span></p>
+                <p class="text-[10px] font-black text-green-400 tracking-[0.2em] uppercase mb-3">Overall Points Narrative</p>
                 <div id="modal-chart-overall" class="chart-container h-44 border-b border-white/5 bg-white/5 rounded-lg mb-2"></div>
                 <div class="flex justify-between mt-2 text-[8px] font-bold text-white/40 uppercase tracking-widest px-1">
                     <span>Season Start</span>
@@ -268,7 +267,6 @@
             document.getElementById('analytics-modal').classList.add('show');
             const chronMatches = [...allMatches].reverse();
             
-            // Overall Data - X-Axis is full season
             const pointsHistory = chronMatches.map(m => ({
                 val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
                 isMajor: m[3] && m[3].trim() !== "",
@@ -279,7 +277,6 @@
             }));
             renderSparkline('modal-chart-overall', pointsHistory, 176, true, false);
 
-            // Categorical Data - Aligned to full season, but markers only on match days
             const p3History = getAlignedHistory(chronMatches, 'par 3');
             renderSparkline('modal-chart-par3', p3History, 96, true, false);
             updateStatLabel('stat-par3', p3History.map(h => h.val));
@@ -297,7 +294,9 @@
             let runningDiff = 0;
             return matches.map(m => {
                 const cat = m[2].toLowerCase();
+                const isMajor = m[3] && m[3].trim() !== "";
                 let isMatch = false;
+
                 if (keyword === '9') {
                    if (cat.includes('9') && !cat.includes('18')) isMatch = true;
                 } else if (cat.includes(keyword)) {
@@ -306,13 +305,14 @@
 
                 if (isMatch) {
                     const winner = m[9].toLowerCase();
-                    if (winner.includes('evan')) runningDiff++;
-                    else if (winner.includes('steve')) runningDiff--;
+                    const ptValue = isMajor ? 5 : 1; // Basic increment for category sparklines
+                    if (winner.includes('evan')) runningDiff += ptValue;
+                    else if (winner.includes('steve')) runningDiff -= ptValue;
                 }
                 
                 return {
                     val: runningDiff,
-                    isMajor: m[3] && m[3].trim() !== "",
+                    isMajor: isMajor,
                     date: m[1],
                     course: m[4],
                     comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
@@ -343,11 +343,9 @@
             spreadEl.className = `text-[9px] font-black px-1.5 py-0.5 rounded italic ${spread > 0 ? 'bg-blue-600 text-white' : spread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
 
             popup.style.display = 'block';
-            
             let left = e.clientX + 10;
             let top = e.clientY - 40;
             if (left + 180 > window.innerWidth) left = e.clientX - 190;
-            
             popup.style.left = `${left}px`;
             popup.style.top = `${top}px`;
         }
@@ -373,7 +371,6 @@
                 line.className = `chart-guide-line ${val === 0 ? 'zero-guide-line' : ''}`;
                 line.style.top = `${yPos}px`;
                 chart.appendChild(line);
-                
                 if (label && !isMainPage) {
                     const lbl = document.createElement('div');
                     lbl.className = 'chart-guide-label';
@@ -391,20 +388,14 @@
                 const x = dataPoints.length > 1 ? i * stepX : 50;
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
                 
-                // MAIN PAGE: Show all points dense. 
-                // DEEP DIVE: Only show circles on 'played' match days.
                 if (isMainPage || point.played) {
                     const dot = document.createElement('div');
                     const baseColorClass = point.val > 0 ? 'bg-blue-400' : point.val < 0 ? 'bg-emerald-400' : 'bg-white';
                     const glowClass = point.val > 0 ? 'shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'shadow-[0_0_8px_#34d399]' : '';
-                    
                     dot.className = `chart-point ${baseColorClass} ${glowClass} ${point.isMajor ? 'major-point-ring' : ''}`;
                     dot.style.left = `${x}%`;
                     dot.style.top = `${y}px`;
-                    
-                    if (interactive) {
-                        dot.addEventListener('click', (e) => showPointPopup(e, point));
-                    }
+                    if (interactive) dot.addEventListener('click', (e) => showPointPopup(e, point));
                     chart.appendChild(dot);
                 }
 
@@ -487,7 +478,6 @@
                     isMajor: m[3] && m[3].trim() !== "",
                     comment: m[23] ? m[23].replace(/"/g, '').trim() : "" 
                 }));
-                // MAIN PAGE sparkline: isMainPage = true
                 renderSparkline('season-chart', pointsHistory, 90, false, true);
             } catch (e) { console.error(e); }
         }
