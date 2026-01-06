@@ -52,10 +52,10 @@
         .mid-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.3); transform: translateX(-50%); z-index: 5; }
 
         .chart-container { width: 100%; position: relative; overflow: visible; }
-        .chart-point { position: absolute; width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 50; transition: all 0.2s ease; cursor: pointer; pointer-events: auto; }
+        .chart-point { position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 50; transition: all 0.2s ease; cursor: pointer; pointer-events: auto; }
         .chart-point:hover { scale: 1.4; filter: brightness(1.2); }
-        .chart-line { position: absolute; height: 2px; transform-origin: left center; z-index: 5; pointer-events: none; }
-        .major-point { width: 16px; height: 16px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 12px rgba(251, 191, 36, 0.8); z-index: 60; border-radius: 50%; }
+        .chart-line { position: absolute; height: 1.5px; transform-origin: left center; z-index: 5; pointer-events: none; }
+        .major-point { width: 14px; height: 14px; border: 2px solid #fbbf24; background: #fbbf24; box-shadow: 0 0 12px rgba(251, 191, 36, 0.8); z-index: 60; border-radius: 50%; }
 
         .chart-guide-line { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.05); pointer-events: none; }
         .chart-guide-label { position: absolute; right: 4px; font-size: 7px; font-weight: 900; color: rgba(255,255,255,0.15); text-transform: uppercase; transform: translateY(-50%); pointer-events: none; }
@@ -265,47 +265,62 @@
         function openModal() {
             document.getElementById('analytics-modal').classList.add('show');
             const chronMatches = [...allMatches].reverse();
+            
+            // Overall Data
             const pointsHistory = chronMatches.map(m => ({
                 val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
                 isMajor: m[3] && m[3].trim() !== "",
                 comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
                 date: m[1] || "",
-                course: m[4] || ""
+                course: m[4] || "",
+                played: true
             }));
-            
             renderSparkline('modal-chart-overall', pointsHistory, 176, true);
 
-            const p3History = getCategoricalWinHistory(chronMatches, 'par 3');
-            renderSparkline('modal-chart-par3', p3History.map(v => ({val: v})), 96, false);
-            updateStatLabel('stat-par3', p3History);
+            // Categorical Data - Aligned but markers only on match days
+            const p3History = getAlignedHistory(chronMatches, 'par 3');
+            renderSparkline('modal-chart-par3', p3History, 96, true);
+            updateStatLabel('stat-par3', p3History.map(h => h.val));
 
-            const h18History = getCategoricalWinHistory(chronMatches, '18');
-            renderSparkline('modal-chart-18hole', h18History.map(v => ({val: v})), 96, false);
-            updateStatLabel('stat-18hole', h18History);
+            const h18History = getAlignedHistory(chronMatches, '18');
+            renderSparkline('modal-chart-18hole', h18History, 96, true);
+            updateStatLabel('stat-18hole', h18History.map(h => h.val));
 
-            const h9History = getCategoricalWinHistory(chronMatches, '9');
-            renderSparkline('modal-chart-9hole', h9History.map(v => ({val: v})), 96, false);
-            updateStatLabel('stat-9hole', h9History);
+            const h9History = getAlignedHistory(chronMatches, '9');
+            renderSparkline('modal-chart-9hole', h9History, 96, true);
+            updateStatLabel('stat-9hole', h9History.map(h => h.val));
         }
 
-        function getCategoricalWinHistory(matches, keyword) {
-            let diff = 0;
-            const history = [0];
-            matches.forEach(m => {
+        function getAlignedHistory(matches, keyword) {
+            let runningDiff = 0;
+            return matches.map(m => {
                 const cat = m[2].toLowerCase();
-                if (keyword === '9' && cat.includes('18')) return;
-                if (cat.includes(keyword)) {
-                    const winner = m[9].toLowerCase();
-                    if (winner.includes('evan')) diff++;
-                    else if (winner.includes('steve')) diff--;
-                    history.push(diff);
+                let isMatch = false;
+                if (keyword === '9') {
+                   if (cat.includes('9') && !cat.includes('18')) isMatch = true;
+                } else if (cat.includes(keyword)) {
+                   isMatch = true;
                 }
+
+                if (isMatch) {
+                    const winner = m[9].toLowerCase();
+                    if (winner.includes('evan')) runningDiff++;
+                    else if (winner.includes('steve')) runningDiff--;
+                }
+                
+                return {
+                    val: runningDiff,
+                    isMajor: m[3] && m[3].trim() !== "",
+                    date: m[1],
+                    course: m[4],
+                    comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
+                    played: isMatch
+                };
             });
-            return history;
         }
 
         function updateStatLabel(id, history) {
-            const last = history[history.length - 1];
+            const last = history[history.length - 1] || 0;
             document.getElementById(id).innerText = last > 0 ? `Evan +${last}` : last < 0 ? `Steve +${Math.abs(last)}` : `Even`;
         }
 
@@ -374,17 +389,19 @@
                 const x = dataPoints.length > 1 ? i * stepX : 50;
                 const y = zeroLine - (point.val * ((height / 2 - PADDING) / absMax));
                 
-                const dot = document.createElement('div');
-                const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
-                dot.className = `chart-point ${point.isMajor ? 'major-point' : baseClass}`;
-                dot.style.left = `${x}%`;
-                dot.style.top = `${y}px`;
-                
-                if (interactive) {
-                    dot.addEventListener('click', (e) => showPointPopup(e, point));
+                // Only draw circle if the match was actually played of this type
+                if (point.played) {
+                    const dot = document.createElement('div');
+                    const baseClass = point.val > 0 ? 'bg-blue-400 shadow-[0_0_8px_#60a5fa]' : point.val < 0 ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white';
+                    dot.className = `chart-point ${point.isMajor ? 'major-point' : baseClass}`;
+                    dot.style.left = `${x}%`;
+                    dot.style.top = `${y}px`;
+                    
+                    if (interactive) {
+                        dot.addEventListener('click', (e) => showPointPopup(e, point));
+                    }
+                    chart.appendChild(dot);
                 }
-                
-                chart.appendChild(dot);
 
                 if (i < dataPoints.length - 1) {
                     const nextVal = dataPoints[i+1].val;
