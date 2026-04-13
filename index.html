@@ -239,7 +239,11 @@
         let availableYears = new Set();
         let activeFilter = null;
 
-        function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
+        function toggleYearMenu(e) { 
+            e.stopPropagation(); 
+            document.getElementById('year-menu').classList.toggle('show'); 
+        }
+
         function closePopup() { 
             document.getElementById('year-menu').classList.remove('show');
             document.getElementById('point-popup').style.display = 'none';
@@ -367,7 +371,6 @@
             const drawScaleLabel = (val, label) => {
                 const yPos = zeroLine - (val * ((height / 2 - PADDING) / absMax));
                 
-                // Draw Even Grid Line ONLY
                 if (val === 0) {
                     const line = document.createElement('div');
                     line.className = 'chart-guide-line';
@@ -430,16 +433,19 @@
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
                 let evTotal = 0, stTotal = 0, evMajorPts = 0, stMajorPts = 0, tournamentCount = 0;
+                
                 rows.forEach(col => {
                     const rowYear = col[5]?.replace(/"/g, '').trim(); 
                     if (rowYear && rowYear !== "Year") availableYears.add(rowYear);
                     const label = col[3]?.replace(/"/g, '').trim(); 
                     if (!label || label === "Category" || label === "" || rowYear !== CONFIG.WebsiteYear) return;
+                    
                     const type = col[0]?.replace(/"/g, '').trim().toLowerCase();
                     const isMajor = type.includes('major');
                     const evPts = parseFloat(col[6]?.replace(/"/g, '').trim()) || 0;
                     const stPts = parseFloat(col[7]?.replace(/"/g, '').trim()) || 0;
                     const evWins = col[8]?.replace(/"/g, '').trim(), stWins = col[9]?.replace(/"/g, '').trim();
+                    
                     if (label.toLowerCase() === 'total') {
                         evTotal = evPts; stTotal = stPts;
                         document.getElementById('evan-points').innerText = evTotal;
@@ -485,6 +491,50 @@
             } catch (e) { console.error(e); }
         }
 
+        function populateYearMenu() {
+            const menu = document.getElementById('year-menu');
+            menu.innerHTML = '';
+            Array.from(availableYears).sort().reverse().forEach(year => {
+                const item = document.createElement('div');
+                item.className = 'year-item';
+                item.innerText = year;
+                item.onclick = () => changeYear(year);
+                menu.appendChild(item);
+            });
+        }
+
+        function updateStats() {
+            let evW = 0, stW = 0;
+            allMatches.forEach(m => {
+                const win = m[9].toLowerCase();
+                if (win.includes('evan')) evW++;
+                else if (win.includes('steve')) stW++;
+            });
+            document.getElementById('evan-wins-stat').innerText = `${evW} Wins`;
+            document.getElementById('steve-wins-stat').innerText = `${stW} Wins`;
+        }
+
+        function applyFilter(cat, el, e) {
+            e.stopPropagation();
+            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
+            if (activeFilter === cat) {
+                resetFilter();
+            } else {
+                activeFilter = cat;
+                el.classList.add('active-filter');
+                document.getElementById('filter-status').classList.remove('hidden');
+                document.getElementById('active-filter-name').innerText = cat;
+                renderMatches();
+            }
+        }
+
+        function resetFilter() {
+            activeFilter = null;
+            document.getElementById('filter-status').classList.add('hidden');
+            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
+            renderMatches();
+        }
+
         function renderMatches() {
             const container = document.getElementById('results-list');
             container.innerHTML = '';
@@ -497,65 +547,5 @@
                 const matchComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
                 const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
-                let html = `<div class="flex flex-col">`;
-                if (sparkComment) html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
-                if (isMajorRound(maj)) html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
-                html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${isMajorRound(maj) ? 'major-card' : ''}">
-                            <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
-                                <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
-                                <span class="text-[9px] font-bold uppercase">${cat}</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span></div>
-                                <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
-                                <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span></div>
-                            </div>
-                            ${matchComment ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">${matchComment}</div>` : ''}
-                        </div>
-                    </div>`;
-                container.innerHTML += html;
-            });
-        }
-
-        function updateStats() {
-            let eW = 0, sW = 0;
-            allMatches.forEach(col => {
-                const w = col[9]?.toLowerCase();
-                if (w.includes('evan')) eW++; else if (w.includes('steve')) sW++;
-            });
-            document.getElementById('evan-wins-stat').innerText = `${eW} Wins`;
-            document.getElementById('steve-wins-stat').innerText = `${sW} Wins`;
-        }
-
-        function applyFilter(cat, el, e) {
-            e.stopPropagation();
-            if (activeFilter === cat) { resetFilter(); return; }
-            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
-            el.classList.add('active-filter');
-            activeFilter = cat;
-            document.getElementById('active-filter-name').innerText = cat;
-            document.getElementById('filter-status').classList.remove('hidden');
-            renderMatches();
-            document.getElementById('filter-status').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function resetFilter() {
-            activeFilter = null;
-            document.querySelectorAll('.category-row').forEach(r => r.classList.remove('active-filter'));
-            document.getElementById('filter-status').classList.add('hidden');
-            renderMatches();
-        }
-
-        function populateYearMenu() {
-            const menu = document.getElementById('year-menu');
-            menu.innerHTML = '';
-            Array.from(availableYears).sort().reverse().forEach(year => {
-                menu.innerHTML += `<div class="year-item" onclick="changeYear('${year}')">${year}</div>`;
-            });
-        }
-
-        function refreshData() { fetchOverallDetails(); fetchMatchResults(); }
-        refreshData();
-    </script>
-</body>
-</html>
+                
+                let html =
