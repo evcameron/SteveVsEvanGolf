@@ -140,7 +140,7 @@
 
     <header class="header-bg shadow-2xl pt-4 pb-3 sticky top-0 z-20">
         <div class="max-w-sm mx-auto px-4">
-            <div class="flex items-end justify-between mb-2">
+            <div class="flex items-end justify-between mb-3">
                 <h1 class="flex flex-col leading-none">
                     <span class="text-[9px] font-bold tracking-[0.4em] text-green-400 uppercase mb-0.5">The Annual</span>
                     <span class="text-2xl font-black uppercase tracking-tighter italic text-white">
@@ -157,7 +157,11 @@
                 </div>
             </div>
 
-            <div id="season-winner-banner" class="hidden mb-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-[11px] uppercase tracking-widest py-1.5 px-3 rounded-lg text-center shadow-lg italic"></div>
+            <!-- Enhanced Season Champion Card -->
+            <div id="season-winner-banner" class="hidden mb-3 p-3.5 rounded-xl border border-white/20 shadow-2xl transition-all">
+                <div id="banner-title" class="text-lg font-black uppercase tracking-tight italic border-b border-white/20 pb-1.5 mb-2 flex items-center gap-2"></div>
+                <div id="banner-recap" class="text-[10.5px] font-medium leading-relaxed opacity-95"></div>
+            </div>
             
             <div class="flex flex-col gap-2">
                 <div class="header-card rounded-xl p-4 shadow-lg text-center">
@@ -225,7 +229,7 @@
     <main class="max-w-md mx-auto p-3">
         <div id="filter-status" class="hidden mb-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
             <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Filtered: <span id="active-filter-name">None</span></span>
-            <button onclick="resetFilter()" class="text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">Clear</button>
+            <button onclick="resetFilter()" class="reset-filter-btn text-[9px] font-black text-white bg-blue-600 px-2.5 py-1 rounded hover:bg-blue-700 uppercase transition-colors">Clear</button>
         </div>
         <div id="results-list" class="space-y-3 pt-2">
             <p class="text-center py-10 text-slate-400 italic">Accessing Season Records...</p>
@@ -237,7 +241,7 @@
         Manage Data
     </a>
 
-    <div class="version-tag">v1.0.3</div>
+    <div class="version-tag">v1.0.4</div>
 
     <script>
         let CONFIG = { WebsiteYear: "2026" };
@@ -248,6 +252,9 @@
         let availableYears = new Set();
         let activeFilter = null;
         let colMap = {};
+        let isSeasonCompleted = false;
+        let currentEvTotal = 0;
+        let currentStTotal = 0;
 
         function formatNumber(num) {
             const val = parseFloat(num);
@@ -466,6 +473,86 @@
             });
         }
 
+        function generateSeasonStory(chronMatches, evTotal, stTotal, year) {
+            if (!chronMatches || chronMatches.length === 0) return "";
+
+            const winner = evTotal > stTotal ? "Evan" : (stTotal > evTotal ? "Steve" : "Tie");
+            const loser = winner === "Evan" ? "Steve" : "Evan";
+            const diff = Math.abs(evTotal - stTotal);
+
+            let sentence1 = "";
+            let sentence2 = "";
+            let sentence3 = "";
+
+            // --- Sentence 1: Championship Headline & Margin ---
+            if (winner === "Tie") {
+                sentence1 = `The ${year} Whistle Post Cup ended in an unbelievable dead-heat, with Evan and Steve locked at ${formatNumber(evTotal)} points apiece after a grueling season.`;
+            } else if (diff >= 10) {
+                sentence1 = `${winner} dominated the ${year} Whistle Post Cup, capturing the title with an authoritative ${formatNumber(evTotal)}–${formatNumber(stTotal)} points victory over ${loser}.`;
+            } else if (diff <= 3) {
+                sentence1 = `${winner} edged out ${loser} in a thrilling finish to win the ${year} Whistle Post Cup by a razor-thin margin of ${formatNumber(diff)} point${diff === 1 ? '' : 's'} (${formatNumber(evTotal)}–${formatNumber(stTotal)}).`;
+            } else {
+                sentence1 = `${winner} won the ${year} Whistle Post Cup with a decisive ${formatNumber(evTotal)}–${formatNumber(stTotal)} finish.`;
+            }
+
+            // --- Sentence 2: Early Trajectory & Mid-season Rally / Majors ---
+            const earlyCutoff = Math.max(1, Math.floor(chronMatches.length * 0.35));
+            const earlyMatches = chronMatches.slice(0, earlyCutoff);
+            
+            let evEarlyWins = 0, stEarlyWins = 0;
+            earlyMatches.forEach(m => {
+                const w = getCol(m, "winner").toLowerCase();
+                if (w.includes("evan")) evEarlyWins++;
+                else if (w.includes("steve")) stEarlyWins++;
+            });
+
+            const earlyLeader = evEarlyWins > stEarlyWins ? "Evan" : (stEarlyWins > evEarlyWins ? "Steve" : "Neither");
+
+            // Look for Major victories
+            const majorWins = { Evan: [], Steve: [] };
+            chronMatches.forEach(m => {
+                const maj = getCol(m, "major");
+                const w = getCol(m, "winner").toLowerCase();
+                if (isMajorRound(maj)) {
+                    if (w.includes("evan")) majorWins.Evan.push(maj);
+                    else if (w.includes("steve")) majorWins.Steve.push(maj);
+                }
+            });
+
+            if (earlyLeader === winner) {
+                sentence2 = `${winner} got out to a strong lead early in the season.`;
+                if (majorWins[loser].length > 0) {
+                    const majList = majorWins[loser].join(" and ");
+                    sentence2 += ` ${loser} fought back mid-season with key victory performance at the ${majList}, but couldn't completely close the gap.`;
+                } else {
+                    sentence2 += ` ${loser} pushed hard mid-season, but ${winner} maintained a firm grip on the standings.`;
+                }
+            } else if (earlyLeader === loser) {
+                sentence2 = `${loser} seized momentum early, but ${winner} mounted an impressive comeback through the middle stretch of the season.`;
+            } else {
+                sentence2 = `The campaign was neck-and-neck out of the gate with both players trading rounds.`;
+            }
+
+            // --- Sentence 3: Final Clinching Push ---
+            const lastMatch = chronMatches[chronMatches.length - 1];
+            const finalCourse = getCol(lastMatch, "course");
+            const finalMajor = getCol(lastMatch, "major");
+
+            if (winner !== "Tie") {
+                if (isMajorRound(finalMajor)) {
+                    sentence3 = `${winner} officially sealed the championship with a crucial win at the ${finalMajor} at ${finalCourse}.`;
+                } else if (finalCourse) {
+                    sentence3 = `${winner} ultimately locked up the cup during the final rounds at ${finalCourse}.`;
+                } else {
+                    sentence3 = `${winner} held steady down the home stretch to claim the cup.`;
+                }
+            } else {
+                sentence3 = `Both players produced heroic shots down the stretch, leaving the cup shared for the year.`;
+            }
+
+            return `${sentence1} ${sentence2} ${sentence3}`;
+        }
+
         async function fetchOverallDetails() {
             try {
                 const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
@@ -498,6 +585,8 @@
                     if (label.toLowerCase() === 'total') {
                         evTotal = evPts; 
                         stTotal = stPts;
+                        currentEvTotal = evTotal;
+                        currentStTotal = stTotal;
                         document.getElementById('evan-points').innerText = formatNumber(evTotal);
                         document.getElementById('steve-points').innerText = formatNumber(stTotal);
                     } else {
@@ -532,25 +621,40 @@
                 document.getElementById('steve-bar-dark').style.width = (stDarkPts / totalSeasonPoints * 100) + '%';
                 document.getElementById('steve-bar-light').style.width = (stLightPts / totalSeasonPoints * 100) + '%';
 
-                const banner = document.getElementById('season-winner-banner');
-                if (categoryRowsCount > 0 && completedCategoryCount === categoryRowsCount) {
-                    banner.classList.remove('hidden');
-                    if (evTotal > stTotal) {
-                        banner.className = "mb-3 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 text-white font-black text-[11px] uppercase tracking-widest py-1.5 px-3 rounded-lg text-center shadow-lg italic";
-                        banner.innerText = `🏆 ${CONFIG.WebsiteYear} CHAMPION: EVAN (${formatNumber(evTotal)} - ${formatNumber(stTotal)})`;
-                    } else if (stTotal > evTotal) {
-                        banner.className = "mb-3 bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-white font-black text-[11px] uppercase tracking-widest py-1.5 px-3 rounded-lg text-center shadow-lg italic";
-                        banner.innerText = `🏆 ${CONFIG.WebsiteYear} CHAMPION: STEVE (${formatNumber(stTotal)} - ${formatNumber(evTotal)})`;
-                    } else {
-                        banner.className = "mb-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-[11px] uppercase tracking-widest py-1.5 px-3 rounded-lg text-center shadow-lg italic";
-                        banner.innerText = `🏆 ${CONFIG.WebsiteYear} CHAMPIONSHIP: TIED SERIES (${formatNumber(evTotal)} - ${formatNumber(stTotal)})`;
-                    }
-                } else {
-                    banner.classList.add('hidden');
-                }
-
+                isSeasonCompleted = categoryRowsCount > 0 && completedCategoryCount === categoryRowsCount;
+                updateWinnerBanner();
                 populateYearMenu();
             } catch (e) { console.error(e); }
+        }
+
+        function updateWinnerBanner() {
+            const banner = document.getElementById('season-winner-banner');
+            const bannerTitle = document.getElementById('banner-title');
+            const bannerRecap = document.getElementById('banner-recap');
+
+            if (isSeasonCompleted && allMatches.length > 0) {
+                banner.classList.remove('hidden');
+                const chronMatches = [...allMatches].reverse();
+                const story = generateSeasonStory(chronMatches, currentEvTotal, currentStTotal, CONFIG.WebsiteYear);
+
+                if (currentEvTotal > currentStTotal) {
+                    banner.className = "mb-3 p-3.5 rounded-xl border border-blue-400/40 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 text-white shadow-2xl";
+                    bannerTitle.className = "text-lg font-black uppercase tracking-tight italic border-b border-blue-400/20 pb-1.5 mb-2 flex items-center gap-2 text-blue-300";
+                    bannerTitle.innerHTML = `🏆 ${CONFIG.WebsiteYear} CHAMPION: EVAN <span class="text-xs not-italic font-extrabold text-blue-400/80 bg-blue-500/20 px-2 py-0.5 rounded-full ml-auto">${formatNumber(currentEvTotal)} - ${formatNumber(currentStTotal)}</span>`;
+                } else if (currentStTotal > currentEvTotal) {
+                    banner.className = "mb-3 p-3.5 rounded-xl border border-emerald-400/40 bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white shadow-2xl";
+                    bannerTitle.className = "text-lg font-black uppercase tracking-tight italic border-b border-emerald-400/20 pb-1.5 mb-2 flex items-center gap-2 text-emerald-300";
+                    bannerTitle.innerHTML = `🏆 ${CONFIG.WebsiteYear} CHAMPION: STEVE <span class="text-xs not-italic font-extrabold text-emerald-400/80 bg-emerald-500/20 px-2 py-0.5 rounded-full ml-auto">${formatNumber(currentStTotal)} - ${formatNumber(currentEvTotal)}</span>`;
+                } else {
+                    banner.className = "mb-3 p-3.5 rounded-xl border border-amber-400/40 bg-gradient-to-br from-amber-950 via-slate-900 to-amber-900 text-white shadow-2xl";
+                    bannerTitle.className = "text-lg font-black uppercase tracking-tight italic border-b border-amber-400/20 pb-1.5 mb-2 flex items-center gap-2 text-amber-300";
+                    bannerTitle.innerHTML = `🏆 ${CONFIG.WebsiteYear} CHAMPIONSHIP: TIED SERIES <span class="text-xs not-italic font-extrabold text-amber-400/80 bg-amber-500/20 px-2 py-0.5 rounded-full ml-auto">${formatNumber(currentEvTotal)} - ${formatNumber(currentStTotal)}</span>`;
+                }
+
+                bannerRecap.innerText = story;
+            } else {
+                banner.classList.add('hidden');
+            }
         }
 
         async function fetchMatchResults() {
@@ -570,6 +674,8 @@
                 allMatches = rows.slice(1).reverse().filter(col => getCol(col, "year") === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
+                updateWinnerBanner();
+
                 const chronMatches = [...allMatches].reverse();
                 const pointsHistory = chronMatches.map(m => {
                     const evPts = parseFloat(getCol(m, "evan points to date")) || 0;
