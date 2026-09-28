@@ -271,10 +271,10 @@
             const chronMatches = [...allMatches].reverse();
             
             const pointsHistory = chronMatches.map(m => ({
-                val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
+                val: (parseFloat(m[21]) || 0) - (parseFloat(m[22]) || 0),
+                comment: m[24] ? m[24].replace(/"/g, '').trim() : "",
                 date: m[1] || "",
-                course: m[4] || "",
+                course: m[5] || "",
                 played: true
             }));
             renderSparkline('modal-chart-overall', pointsHistory, 176, true, false);
@@ -311,7 +311,7 @@
                 }
 
                 if (isMatch) {
-                    const winner = m[9].toLowerCase();
+                    const winner = m[10].toLowerCase();
                     if (winner.includes('evan')) runningDiff += 1;
                     else if (winner.includes('steve')) runningDiff -= 1;
                 }
@@ -319,8 +319,8 @@
                 return {
                     val: runningDiff,
                     date: m[1],
-                    course: m[4],
-                    comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
+                    course: m[5],
+                    comment: m[24] ? m[24].replace(/"/g, '').trim() : "",
                     played: isMatch
                 };
             });
@@ -483,13 +483,13 @@
                 updateStats();
                 const chronMatches = [...allMatches].reverse();
                 const pointsHistory = chronMatches.map(m => {
-                    const evPts = parseFloat(m[20]) || 0;
-                    const stPts = parseFloat(m[21]) || 0;
+                    const evPts = parseFloat(m[21]) || 0;
+                    const stPts = parseFloat(m[22]) || 0;
                     return {
                         val: evPts - stPts,
-                        comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
+                        comment: m[24] ? m[24].replace(/"/g, '').trim() : "",
                         date: m[1] || "",
-                        course: m[4] || ""
+                        course: m[5] || ""
                     };
                 });
                 renderSparkline('season-chart', pointsHistory, 90, false, true);
@@ -499,27 +499,56 @@
         function renderMatches() {
             const container = document.getElementById('results-list');
             container.innerHTML = '';
-            const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[3]?.trim() === activeFilter) : allMatches;
+            const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[4]?.trim() === activeFilter) : allMatches;
             if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found.</p>`; return; }
             filtered.forEach(col => {
-                const dateStr = col[1]?.trim(), cat = col[2]?.trim(), maj = col[3]?.trim(), course = col[4]?.trim();
-                const evS = col[5]?.trim(), stS = col[6]?.trim(), evH = col[7]?.trim() || "0", stH = col[8]?.trim() || "0", winnerText = col[9]?.trim().toLowerCase();
-                const sparkComment = col[22] ? col[22].replace(/"/g, '').trim() : "";
-                const matchComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
-                const isEvW = winnerText.includes('evan'), isStW = winnerText.includes('steve');
+                const dateStr = col[1]?.trim();
+                const cat = col[2]?.trim();
+                const compType = col[3]?.replace(/"/g, '').trim().toLowerCase();
+                const maj = col[4]?.trim();
+                const course = col[5]?.trim();
+                const evS = col[6]?.trim();
+                const stS = col[7]?.trim();
+                const evH = col[8]?.trim() || "0";
+                const stH = col[9]?.trim() || "0";
+                const winnerText = col[10]?.trim().toLowerCase();
+                
+                const sparkComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
+                const matchComment = col[24] ? col[24].replace(/"/g, '').trim() : "";
+                
+                const isEvW = winnerText.includes('evan');
+                const isStW = winnerText.includes('steve');
+                const isStroke = compType.includes('stroke');
+
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
+                
                 let html = `<div class="flex flex-col">`;
                 if (sparkComment) html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
                 if (isMajorRound(maj)) html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
+                
+                const evanDisplay = isStroke 
+                    ? `<span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evS}</span>`
+                    : `<span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span>`;
+
+                const steveDisplay = isStroke 
+                    ? `<span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}">${stS}</span>`
+                    : `<span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span>`;
+
                 html += `<div class="score-card px-3 py-2 flex flex-col ${catClass} ${isEvW ? 'bg-evan-win' : (isStW ? 'bg-steve-win' : 'bg-draw')} ${isMajorRound(maj) ? 'major-card' : ''}">
                             <div class="flex justify-between items-center mb-1 border-b border-slate-200 pb-1 text-slate-500">
                                 <span class="text-[9px] font-bold uppercase">${dateStr} • ${course}</span>
                                 <span class="text-[9px] font-bold uppercase">${cat}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 w-[42%]"><span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span><span class="text-xl font-black ${isEvW ? 'text-slate-900' : 'text-slate-400'}">${evH} <span class="text-[9px] font-bold opacity-60 ml-0.5">(${evS})</span></span></div>
+                                <div class="flex items-center gap-2 w-[42%]">
+                                    <span class="font-black text-[10px] ${isEvW ? 'text-blue-800' : 'text-slate-400'}">EVAN</span>
+                                    ${evanDisplay}
+                                </div>
                                 <span class="text-slate-300 italic font-bold text-[10px]">VS</span>
-                                <div class="flex items-center justify-end gap-2 w-[42%] text-right"><span class="text-xl font-black ${isStW ? 'text-slate-900' : 'text-slate-400'}"><span class="text-[9px] font-bold opacity-60 mr-0.5">(${stS})</span> ${stH}</span><span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span></div>
+                                <div class="flex items-center justify-end gap-2 w-[42%] text-right">
+                                    ${steveDisplay}
+                                    <span class="font-black text-[10px] ${isStW ? 'text-emerald-800' : 'text-slate-400'}">STEVE</span>
+                                </div>
                             </div>
                             ${matchComment ? `<div class="mt-2 text-[9px] italic text-slate-500 border-t border-slate-100 pt-1">${matchComment}</div>` : ''}
                         </div>
@@ -531,7 +560,7 @@
         function updateStats() {
             let eW = 0, sW = 0;
             allMatches.forEach(col => {
-                const w = col[9]?.toLowerCase();
+                const w = col[10]?.toLowerCase();
                 if (w.includes('evan')) eW++; else if (w.includes('steve')) sW++;
             });
             document.getElementById('evan-wins-stat').innerText = `${eW} Wins`;
