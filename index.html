@@ -239,6 +239,12 @@
         let availableYears = new Set();
         let activeFilter = null;
 
+        function formatNumber(num) {
+            const val = parseFloat(num);
+            if (isNaN(val)) return num;
+            return val % 1 === 0 ? val.toFixed(0) : val.toString();
+        }
+
         function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
         function closePopup() { 
             document.getElementById('year-menu').classList.remove('show');
@@ -322,7 +328,7 @@
 
         function updateStatLabel(id, history) {
             const last = history[history.length - 1] || 0;
-            document.getElementById(id).innerText = last > 0 ? `Evan +${last}` : last < 0 ? `Steve +${Math.abs(last)}` : `Even`;
+            document.getElementById(id).innerText = last > 0 ? `Evan +${formatNumber(last)}` : last < 0 ? `Steve +${formatNumber(Math.abs(last))}` : `Even`;
         }
 
         function closeModal() { document.getElementById('analytics-modal').classList.remove('show'); }
@@ -338,7 +344,7 @@
             commentEl.innerText = point.comment || "No Lead Change";
             
             const spread = point.val;
-            spreadEl.innerText = spread > 0 ? `Evan +${spread}` : spread < 0 ? `Steve +${Math.abs(spread)}` : `Even`;
+            spreadEl.innerText = spread > 0 ? `Evan +${formatNumber(spread)}` : spread < 0 ? `Steve +${formatNumber(Math.abs(spread))}` : `Even`;
             spreadEl.className = `text-[9px] font-black px-1.5 py-0.5 rounded italic ${spread > 0 ? 'bg-blue-600 text-white' : spread < 0 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white'}`;
 
             popup.style.display = 'block';
@@ -367,7 +373,6 @@
             const drawScaleLabel = (val, label) => {
                 const yPos = zeroLine - (val * ((height / 2 - PADDING) / absMax));
                 
-                // Draw Even Grid Line ONLY
                 if (val === 0) {
                     const line = document.createElement('div');
                     line.className = 'chart-guide-line';
@@ -384,9 +389,9 @@
                 }
             };
 
-            drawScaleLabel(absMax, `+${absMax}`);
+            drawScaleLabel(absMax, `+${formatNumber(absMax)}`);
             drawScaleLabel(0, 'Even');
-            drawScaleLabel(-absMax, `-${absMax}`);
+            drawScaleLabel(-absMax, `-${formatNumber(absMax)}`);
 
             dataPoints.forEach((point, i) => {
                 const x = dataPoints.length > 1 ? i * stepX : 50;
@@ -442,16 +447,16 @@
                     const evWins = col[8]?.replace(/"/g, '').trim(), stWins = col[9]?.replace(/"/g, '').trim();
                     if (label.toLowerCase() === 'total') {
                         evTotal = evPts; stTotal = stPts;
-                        document.getElementById('evan-points').innerText = evTotal;
-                        document.getElementById('steve-points').innerText = stTotal;
+                        document.getElementById('evan-points').innerText = formatNumber(evTotal);
+                        document.getElementById('steve-points').innerText = formatNumber(stTotal);
                     } else {
                         tournamentCount++;
                         if (isMajor) { evMajorPts += evPts; stMajorPts += stPts; }
                         list.innerHTML += `<div onclick="applyFilter('${label}', this, event)" class="category-row flex items-center border-b border-white/5 pb-1">
                                 <div class="flex-grow truncate pr-1"><span class="opacity-70 truncate">${label}</span></div>
                                 <div class="flex w-52 text-center items-center flex-shrink-0">
-                                    <span class="w-12 text-blue-500 font-black">${evPts}</span>
-                                    <span class="w-12 text-emerald-500 font-black border-r border-white/10">${stPts}</span>
+                                    <span class="w-12 text-blue-500 font-black">${formatNumber(evPts)}</span>
+                                    <span class="w-12 text-emerald-500 font-black border-r border-white/10">${formatNumber(stPts)}</span>
                                     <span class="w-12 ml-1 text-blue-300/60 text-[8px]">${isMajor ? '' : evWins+'w'}</span>
                                     <span class="w-12 text-emerald-300/60 text-[8px]">${isMajor ? '' : stWins+'w'}</span>
                                 </div>
@@ -459,11 +464,11 @@
                         if (tournamentCount === 3) list.innerHTML += `<div class="points-divider"></div>`;
                     }
                 });
-                const target = 100;
-                document.getElementById('evan-bar-dark').style.width = (evMajorPts / target * 100) + '%';
-                document.getElementById('evan-bar-light').style.width = ((evTotal - evMajorPts) / target * 100) + '%';
-                document.getElementById('steve-bar-dark').style.width = (stMajorPts / target * 100) + '%';
-                document.getElementById('steve-bar-light').style.width = ((stTotal - stMajorPts) / target * 100) + '%';
+                const totalSeasonPoints = (evTotal + stTotal) || 100;
+                document.getElementById('evan-bar-dark').style.width = (evMajorPts / totalSeasonPoints * 100) + '%';
+                document.getElementById('evan-bar-light').style.width = ((evTotal - evMajorPts) / totalSeasonPoints * 100) + '%';
+                document.getElementById('steve-bar-dark').style.width = (stMajorPts / totalSeasonPoints * 100) + '%';
+                document.getElementById('steve-bar-light').style.width = ((stTotal - stMajorPts) / totalSeasonPoints * 100) + '%';
                 populateYearMenu();
             } catch (e) { console.error(e); }
         }
@@ -477,10 +482,16 @@
                 renderMatches();
                 updateStats();
                 const chronMatches = [...allMatches].reverse();
-                const pointsHistory = chronMatches.map(m => ({
-                    val: (parseFloat(m[20]) || 0) - (parseFloat(m[21]) || 0),
-                    comment: m[23] ? m[23].replace(/"/g, '').trim() : "" 
-                }));
+                const pointsHistory = chronMatches.map(m => {
+                    const evPts = parseFloat(m[20]) || 0;
+                    const stPts = parseFloat(m[21]) || 0;
+                    return {
+                        val: evPts - stPts,
+                        comment: m[23] ? m[23].replace(/"/g, '').trim() : "",
+                        date: m[1] || "",
+                        course: m[4] || ""
+                    };
+                });
                 renderSparkline('season-chart', pointsHistory, 90, false, true);
             } catch (e) { console.error(e); }
         }
