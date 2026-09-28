@@ -241,7 +241,7 @@
         Manage Data
     </a>
 
-    <div class="version-tag">v1.0.4</div>
+    <div class="version-tag">v1.0.5</div>
 
     <script>
         let CONFIG = { WebsiteYear: "2026" };
@@ -522,8 +522,10 @@
             if (earlyLeader === winner) {
                 sentence2 = `${winner} got out to a strong lead early in the season.`;
                 if (majorWins[loser].length > 0) {
+                    const count = majorWins[loser].length;
                     const majList = majorWins[loser].join(" and ");
-                    sentence2 += ` ${loser} fought back mid-season with key victory performance at the ${majList}, but couldn't completely close the gap.`;
+                    const text = count === 1 ? `a big win at the ${majList}` : `big wins at both the ${majList}`;
+                    sentence2 += ` ${loser} closed the gap in the middle of the season with ${text}, but couldn't complete the comeback.`;
                 } else {
                     sentence2 += ` ${loser} pushed hard mid-season, but ${winner} maintained a firm grip on the standings.`;
                 }
@@ -540,9 +542,9 @@
 
             if (winner !== "Tie") {
                 if (isMajorRound(finalMajor)) {
-                    sentence3 = `${winner} officially sealed the championship with a crucial win at the ${finalMajor} at ${finalCourse}.`;
+                    sentence3 = `${winner} officially sealed the championship with a crucial victory at the ${finalMajor}.`;
                 } else if (finalCourse) {
-                    sentence3 = `${winner} ultimately locked up the cup during the final rounds at ${finalCourse}.`;
+                    sentence3 = `${winner} ultimately closed it out during the final rounds at ${finalCourse}.`;
                 } else {
                     sentence3 = `${winner} held steady down the home stretch to claim the cup.`;
                 }
