@@ -311,7 +311,7 @@
                 }
 
                 if (isMatch) {
-                    const winner = m[10].toLowerCase();
+                    const winner = m[10] ? m[10].replace(/"/g, '').trim().toLowerCase() : '';
                     if (winner.includes('evan')) runningDiff += 1;
                     else if (winner.includes('steve')) runningDiff -= 1;
                 }
@@ -502,18 +502,18 @@
             const filtered = activeFilter ? allMatches.filter(col => col[2]?.trim() === activeFilter || col[4]?.trim() === activeFilter) : allMatches;
             if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found.</p>`; return; }
             filtered.forEach(col => {
-                const dateStr = col[1]?.trim();
-                const cat = col[2]?.trim();
-                const compType = col[3]?.replace(/"/g, '').trim().toLowerCase();
-                const maj = col[4]?.trim();
-                const course = col[5]?.trim();
-                const evS = col[6]?.trim();
-                const stS = col[7]?.trim();
-                const evH = col[8]?.trim() || "0";
-                const stH = col[9]?.trim() || "0";
-                const winnerText = col[10]?.trim().toLowerCase();
+                const dateStr = col[1]?.replace(/"/g, '').trim();
+                const cat = col[2]?.replace(/"/g, '').trim();
+                const compType = col[3] ? col[3].replace(/"/g, '').trim().toLowerCase() : '';
+                const maj = col[4]?.replace(/"/g, '').trim();
+                const course = col[5]?.replace(/"/g, '').trim();
+                const evS = col[6]?.replace(/"/g, '').trim();
+                const stS = col[7]?.replace(/"/g, '').trim();
+                const evH = col[8]?.replace(/"/g, '').trim() || "0";
+                const stH = col[9]?.replace(/"/g, '').trim() || "0";
+                const winnerText = col[10] ? col[10].replace(/"/g, '').trim().toLowerCase() : '';
                 
-                const sparkComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
+                const milestoneComment = col[23] ? col[23].replace(/"/g, '').trim() : "";
                 const matchComment = col[24] ? col[24].replace(/"/g, '').trim() : "";
                 
                 const isEvW = winnerText.includes('evan');
@@ -523,7 +523,7 @@
                 let catClass = cat.toLowerCase().includes('par 3') ? 'border-par3' : (cat.toLowerCase().includes('18') ? 'border-18hole' : 'border-9hole');
                 
                 let html = `<div class="flex flex-col">`;
-                if (sparkComment) html += `<div class="milestone-card"><p class="milestone-text">${sparkComment}</p></div>`;
+                if (milestoneComment) html += `<div class="milestone-card"><p class="milestone-text">${milestoneComment}</p></div>`;
                 if (isMajorRound(maj)) html += `<div class="flex justify-start pl-4 mt-2"><span class="major-header text-[9px] font-black px-3 py-1 rounded-t-lg uppercase italic tracking-widest shadow-sm">🏆 ${maj}</span></div>`;
                 
                 const evanDisplay = isStroke 
@@ -560,7 +560,7 @@
         function updateStats() {
             let eW = 0, sW = 0;
             allMatches.forEach(col => {
-                const w = col[10]?.toLowerCase();
+                const w = col[10] ? col[10].replace(/"/g, '').trim().toLowerCase() : '';
                 if (w.includes('evan')) eW++; else if (w.includes('steve')) sW++;
             });
             document.getElementById('evan-wins-stat').innerText = `${eW} Wins`;
