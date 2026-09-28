@@ -246,7 +246,27 @@
         }
 
         function cleanStr(val) {
-            return val ? val.replace(/"/g, '').trim() : '';
+            return val ? val.replace(/^"|"$/g, '').trim() : '';
+        }
+
+        function parseCSVLine(text) {
+            const result = [];
+            let cell = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (c === '"') {
+                    if (inQuotes && text[i+1] === '"') { cell += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (c === ',' && !inQuotes) {
+                    result.push(cell);
+                    cell = '';
+                } else {
+                    cell += c;
+                }
+            }
+            result.push(cell);
+            return result;
         }
 
         function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
@@ -435,7 +455,7 @@
             try {
                 const response = await fetch(DETAILS_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
-                const rows = data.split(/\r?\n/).map(row => row.split(','));
+                const rows = data.split(/\r?\n/).map(row => parseCSVLine(row));
                 const list = document.getElementById('breakdown-list');
                 list.innerHTML = '';
                 let evTotal = 0, stTotal = 0, evMajorPts = 0, stMajorPts = 0, tournamentCount = 0;
@@ -481,7 +501,7 @@
             try {
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
-                const rows = data.split(/\r?\n/).map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+                const rows = data.split(/\r?\n/).map(row => parseCSVLine(row));
                 allMatches = rows.slice(1).reverse().filter(col => cleanStr(col[0]) === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
