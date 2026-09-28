@@ -238,6 +238,7 @@
         let allMatches = []; 
         let availableYears = new Set();
         let activeFilter = null;
+        let colMap = {};
 
         function formatNumber(num) {
             const val = parseFloat(num);
@@ -269,6 +270,11 @@
             return result;
         }
 
+        function getCol(row, colName) {
+            const idx = colMap[colName.toLowerCase()];
+            return idx !== undefined && row[idx] !== undefined ? cleanStr(row[idx]) : '';
+        }
+
         function toggleYearMenu(e) { e.stopPropagation(); document.getElementById('year-menu').classList.toggle('show'); }
         function closePopup() { 
             document.getElementById('year-menu').classList.remove('show');
@@ -295,10 +301,10 @@
             const chronMatches = [...allMatches].reverse();
             
             const pointsHistory = chronMatches.map(m => ({
-                val: (parseFloat(cleanStr(m[21])) || 0) - (parseFloat(cleanStr(m[22])) || 0),
-                comment: cleanStr(m[24]),
-                date: cleanStr(m[1]),
-                course: cleanStr(m[5]),
+                val: (parseFloat(getCol(m, "evan points to date")) || 0) - (parseFloat(getCol(m, "steve points to date")) || 0),
+                comment: getCol(m, "detailed comment"),
+                date: getCol(m, "date"),
+                course: getCol(m, "course"),
                 played: true
             }));
             renderSparkline('modal-chart-overall', pointsHistory, 176, true, false);
@@ -325,7 +331,7 @@
         function getAlignedHistory(matches, keyword) {
             let runningDiff = 0;
             return matches.map(m => {
-                const cat = cleanStr(m[2]).toLowerCase();
+                const cat = getCol(m, "category").toLowerCase();
                 let isMatch = false;
 
                 if (keyword === '9') {
@@ -335,16 +341,16 @@
                 }
 
                 if (isMatch) {
-                    const winner = cleanStr(m[10]).toLowerCase();
+                    const winner = getCol(m, "winner").toLowerCase();
                     if (winner.includes('evan')) runningDiff += 1;
                     else if (winner.includes('steve')) runningDiff -= 1;
                 }
                 
                 return {
                     val: runningDiff,
-                    date: cleanStr(m[1]),
-                    course: cleanStr(m[5]),
-                    comment: cleanStr(m[24]),
+                    date: getCol(m, "date"),
+                    course: getCol(m, "course"),
+                    comment: getCol(m, "detailed comment"),
                     played: isMatch
                 };
             });
@@ -502,18 +508,27 @@
                 const response = await fetch(MATCHES_URL + '&cb=' + new Date().getTime());
                 const data = await response.text();
                 const rows = data.split(/\r?\n/).map(row => parseCSVLine(row));
-                allMatches = rows.slice(1).reverse().filter(col => cleanStr(col[0]) === CONFIG.WebsiteYear);
+                
+                if (rows.length > 0) {
+                    colMap = {};
+                    rows[0].forEach((header, idx) => {
+                        const h = cleanStr(header).toLowerCase();
+                        colMap[h] = idx;
+                    });
+                }
+
+                allMatches = rows.slice(1).reverse().filter(col => getCol(col, "year") === CONFIG.WebsiteYear);
                 renderMatches();
                 updateStats();
                 const chronMatches = [...allMatches].reverse();
                 const pointsHistory = chronMatches.map(m => {
-                    const evPts = parseFloat(cleanStr(m[21])) || 0;
-                    const stPts = parseFloat(cleanStr(m[22])) || 0;
+                    const evPts = parseFloat(getCol(m, "evan points to date")) || 0;
+                    const stPts = parseFloat(getCol(m, "steve points to date")) || 0;
                     return {
                         val: evPts - stPts,
-                        comment: cleanStr(m[24]),
-                        date: cleanStr(m[1]),
-                        course: cleanStr(m[5])
+                        comment: getCol(m, "detailed comment"),
+                        date: getCol(m, "date"),
+                        course: getCol(m, "course")
                     };
                 });
                 renderSparkline('season-chart', pointsHistory, 90, false, true);
@@ -523,22 +538,25 @@
         function renderMatches() {
             const container = document.getElementById('results-list');
             container.innerHTML = '';
-            const filtered = activeFilter ? allMatches.filter(col => cleanStr(col[2]) === activeFilter || cleanStr(col[4]) === activeFilter) : allMatches;
+            const filtered = activeFilter 
+                ? allMatches.filter(col => getCol(col, "category") === activeFilter || getCol(col, "major") === activeFilter) 
+                : allMatches;
+                
             if (filtered.length === 0) { container.innerHTML = `<p class="text-center py-10 text-slate-400">No records found.</p>`; return; }
             filtered.forEach(col => {
-                const dateStr = cleanStr(col[1]);
-                const cat = cleanStr(col[2]);
-                const compType = cleanStr(col[3]).toLowerCase();
-                const maj = cleanStr(col[4]);
-                const course = cleanStr(col[5]);
-                const evS = cleanStr(col[6]);
-                const stS = cleanStr(col[7]);
-                const evH = cleanStr(col[8]) || "0";
-                const stH = cleanStr(col[9]) || "0";
-                const winnerText = cleanStr(col[10]).toLowerCase();
+                const dateStr = getCol(col, "date");
+                const cat = getCol(col, "category");
+                const compType = (getCol(col, "competition type") || "match").toLowerCase();
+                const maj = getCol(col, "major");
+                const course = getCol(col, "course");
+                const evS = getCol(col, "evan strokes");
+                const stS = getCol(col, "steve strokes");
+                const evH = getCol(col, "evan holes won") || "0";
+                const stH = getCol(col, "steve holes won") || "0";
+                const winnerText = getCol(col, "winner").toLowerCase();
                 
-                const milestoneComment = cleanStr(col[23]);
-                const matchComment = cleanStr(col[24]);
+                const milestoneComment = getCol(col, "manual comment") || getCol(col, "tag for sparkline chart adv") || getCol(col, "lead changes");
+                const matchComment = getCol(col, "detailed comment");
                 
                 const isEvW = winnerText.includes('evan');
                 const isStW = winnerText.includes('steve');
@@ -584,7 +602,7 @@
         function updateStats() {
             let eW = 0, sW = 0;
             allMatches.forEach(col => {
-                const w = cleanStr(col[10]).toLowerCase();
+                const w = getCol(col, "winner").toLowerCase();
                 if (w.includes('evan')) eW++; else if (w.includes('steve')) sW++;
             });
             document.getElementById('evan-wins-stat').innerText = `${eW} Wins`;
